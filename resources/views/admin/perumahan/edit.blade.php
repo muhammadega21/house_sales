@@ -1,0 +1,13 @@
+@extends('layouts.app')
+
+@section('content')
+<div class="space-y-6">
+    <div class="flex items-center justify-between"><div><h1 class="text-2xl font-bold text-gray-900">Edit Perumahan</h1><p class="mt-1 text-sm text-gray-500">Perbarui informasi {{ $perumahan->nama_perumahan }}.</p></div><a href="{{ route('admin.perumahan.index') }}" class="rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">Kembali</a></div>
+    <x-card title="Informasi Perumahan" subtitle="Upload foto baru untuk mengganti foto kawasan saat ini."><form method="POST" action="{{ route('admin.perumahan.update', $perumahan) }}" enctype="multipart/form-data">@csrf @method('PUT')
+        <div class="grid gap-x-6 md:grid-cols-2"><x-form-input name="nama_perumahan" label="Nama Perumahan" :value="$perumahan->nama_perumahan" :required="true" maxlength="150" /><x-form-input name="kota" label="Kota/Kabupaten" :value="$perumahan->kota" :required="true" maxlength="50" /><x-form-input name="provinsi" label="Provinsi" :value="$perumahan->provinsi" :required="true" maxlength="50" /><x-form-input name="kode_pos" label="Kode Pos" :value="$perumahan->kode_pos" maxlength="10" inputmode="numeric" /><div class="md:col-span-2"><x-form-textarea name="alamat" label="Alamat Lengkap" :value="$perumahan->alamat" :required="true" rows="3" /></div><x-form-input name="latitude" label="Latitude" type="number" step="0.00000001" :value="$perumahan->latitude" /><x-form-input name="longitude" label="Longitude" type="number" step="0.00000001" :value="$perumahan->longitude" /><div class="md:col-span-2"><x-form-textarea name="deskripsi" label="Deskripsi" :value="$perumahan->deskripsi" rows="4" /></div><x-form-select name="status" label="Status" :options="['aktif' => 'Aktif', 'non_aktif' => 'Non-Aktif']" :selected="$perumahan->status" :required="true" /></div>
+        @if($perumahan->foto_kawasan)<div class="mb-4 flex items-center gap-4"><img src="{{ asset('storage/' . $perumahan->foto_kawasan) }}" alt="{{ $perumahan->nama_perumahan }}" class="h-24 w-36 rounded-xl object-cover"><p class="text-sm text-gray-500">Foto kawasan saat ini.</p></div>@endif
+        <x-form-file name="foto_kawasan" label="Foto Kawasan Baru" accept="image/jpeg,image/png" />
+        <div class="mt-6 flex justify-end gap-3 border-t border-gray-100 pt-6"><a href="{{ route('admin.perumahan.index') }}" class="rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">Batal</a><button type="submit" class="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-dark">Perbarui</button></div>
+    </form></x-card>
+</div>
+@endsection
