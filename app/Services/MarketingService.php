@@ -21,7 +21,7 @@ class MarketingService extends BaseService
 
     public function getAllMarketing(Request $request): LengthAwarePaginator
     {
-        $query = User::marketing()->when($request->filled('status'), fn ($q) => $q->where('status', $request->input('status')))->orderBy('nama_lengkap');
+        $query = User::marketing()->when($request->filled('status'), fn($q) => $q->where('status', $request->input('status')))->orderBy('nama_lengkap');
         return $query->paginate(10)->withQueryString();
     }
 
@@ -29,14 +29,31 @@ class MarketingService extends BaseService
     {
         $data['role'] = Role::Marketing->value;
         $data['password'] = Hash::make($data['password']);
-        if (($data['foto_profil'] ?? null) instanceof UploadedFile) { $data['foto_profil'] = $this->uploadFile($data['foto_profil'], 'foto-profil'); } else { unset($data['foto_profil']); }
+        if (($data['foto_profil'] ?? null) instanceof UploadedFile) {
+            $data['foto_profil'] = $this->uploadFile($data['foto_profil'], 'foto-profil');
+        } elseif (!empty($data['remove_foto_profil'])) {
+            $data['foto_profil'] = null;
+        } else {
+            unset($data['foto_profil']);
+        }
         return User::create($data);
     }
 
     public function updateMarketing(User $marketing, array $data): User
     {
-        if (!empty($data['password'])) { $data['password'] = Hash::make($data['password']); } else { unset($data['password']); }
-        if (($data['foto_profil'] ?? null) instanceof UploadedFile) { $data['foto_profil'] = $this->uploadFile($data['foto_profil'], 'foto-profil', $marketing->foto_profil); } else { unset($data['foto_profil']); }
+        if (!empty($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
+        } else {
+            unset($data['password']);
+        }
+        if (($data['foto_profil'] ?? null) instanceof UploadedFile) {
+            $data['foto_profil'] = $this->uploadFile($data['foto_profil'], 'foto-profil', $marketing->foto_profil);
+        } elseif (!empty($data['remove_foto_profil'])) {
+            $this->deleteFile($marketing->foto_profil);
+            $data['foto_profil'] = null;
+        } else {
+            unset($data['foto_profil']);
+        }
         $marketing->update($data);
         return $marketing;
     }
@@ -70,7 +87,7 @@ class MarketingService extends BaseService
 
     public function getRanking(int $bulan, int $tahun)
     {
-        return $this->getAllMarketing(new Request())->getCollection()->map(fn (User $marketing) => ['marketing' => $marketing, 'kinerja' => $this->getKinerja($marketing->id, $bulan, $tahun)])->sortByDesc(fn ($row) => $row['kinerja']['closing'])->values();
+        return $this->getAllMarketing(new Request())->getCollection()->map(fn(User $marketing) => ['marketing' => $marketing, 'kinerja' => $this->getKinerja($marketing->id, $bulan, $tahun)])->sortByDesc(fn($row) => $row['kinerja']['closing'])->values();
     }
 
     public function getBestMarketing(int $limit = 5)

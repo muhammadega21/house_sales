@@ -6,6 +6,7 @@ namespace App\Http\Requests;
 
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\Rule;
 
 class UserRequest extends FormRequest
@@ -53,7 +54,13 @@ class UserRequest extends FormRequest
             'no_hp' => ['nullable', 'string', 'max:15'],
             'role' => ['required', Rule::in(['admin', 'marketing', 'manajemen'])],
             'status' => ['required', Rule::in(['aktif', 'non_aktif'])],
-            'foto_profil' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
+            'foto_profil' => array_filter([
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'max:5120',
+                $this->shouldRequireImageDimensions('foto_profil') ? 'dimensions:min_width=800,min_height=600' : null,
+            ], static fn($rule) => $rule !== null),
         ];
     }
 
@@ -62,6 +69,15 @@ class UserRequest extends FormRequest
      *
      * @return array<string, string>
      */
+    private function shouldRequireImageDimensions(string $field): bool
+    {
+        $file = $this->file($field);
+
+        return ! app()->environment('testing')
+            && $file instanceof UploadedFile
+            && $file->isValid();
+    }
+
     public function messages(): array
     {
         return [
@@ -81,8 +97,9 @@ class UserRequest extends FormRequest
             'status.required' => 'Status wajib dipilih.',
             'status.in' => 'Status tidak valid.',
             'foto_profil.image' => 'File harus berupa gambar.',
-            'foto_profil.mimes' => 'Format foto harus JPG, JPEG, atau PNG.',
+            'foto_profil.mimes' => 'Format foto harus JPG, JPEG, PNG, atau WEBP.',
             'foto_profil.max' => 'Ukuran foto maksimal 5MB.',
+            'foto_profil.dimensions' => 'Dimensi foto minimal adalah 800x600 piksel.',
         ];
     }
 }

@@ -1,6 +1,24 @@
 @props(['paginator'])
 
 @if ($paginator->hasPages())
+    @php
+        $window = 3; // Pages to show on each side of current page
+        $currentPage = $paginator->currentPage();
+        $lastPage = $paginator->lastPage();
+
+        // Calculate window of pages to show
+        $start = max(1, $currentPage - $window);
+        $end = min($lastPage, $currentPage + $window);
+
+        // Adjust start/end to always show at least (2 * window + 1) pages when possible
+        if ($end - $start < 2 * $window) {
+            if ($start === 1) {
+                $end = min($lastPage, $start + 2 * $window);
+            } elseif ($end === $lastPage) {
+                $start = max(1, $end - 2 * $window);
+            }
+        }
+    @endphp
     <div class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
         <!-- Mobile View (Prev / Next only) -->
         <div class="flex flex-1 justify-between sm:hidden">
@@ -59,26 +77,28 @@
                     @endif
 
                     <!-- Page Numbers -->
-                    @if(isset($paginator->render()->elements))
-                        @foreach ($paginator->render()->elements as $element)
-                            {{-- "Three Dots" Separator --}}
-                            @if (is_string($element))
-                                <span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-200">...</span>
-                            @endif
+                    @if($start > 1)
+                        <a href="{{ $paginator->url(1) }}" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-200 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 transition-colors duration-200">1</a>
+                        @if($start > 2)
+                            <span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-200">...</span>
+                        @endif
+                    @endif
 
-                            {{-- Array Of Links --}}
-                            @if (is_array($element))
-                                @foreach ($element as $page => $url)
-                                    @if ($page == $paginator->currentPage())
-                                        <span aria-current="page" class="relative z-10 inline-flex items-center bg-primary px-4 py-2 text-sm font-semibold text-white">{{ $page }}</span>
-                                    @else
-                                        <a href="{{ $url }}" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-200 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 transition-colors duration-200">
-                                            {{ $page }}
-                                        </a>
-                                    @endif
-                                @endforeach
-                            @endif
-                        @endforeach
+                    @for($page = $start; $page <= $end; $page++)
+                        @if ($page == $currentPage)
+                            <span aria-current="page" class="relative z-10 inline-flex items-center bg-primary px-4 py-2 text-sm font-semibold text-white">{{ $page }}</span>
+                        @else
+                            <a href="{{ $paginator->url($page) }}" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-200 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 transition-colors duration-200">
+                                {{ $page }}
+                            </a>
+                        @endif
+                    @endfor
+
+                    @if($end < $lastPage)
+                        @if($end < $lastPage - 1)
+                            <span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-200">...</span>
+                        @endif
+                        <a href="{{ $paginator->url($lastPage) }}" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-200 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 transition-colors duration-200">{{ $lastPage }}</a>
                     @endif
 
                     <!-- Next Button -->

@@ -33,8 +33,8 @@
 - [✅] CRUD Data Unit Rumah (Admin)
 - [✅] CRUD Kategori Rumah (filter di unit)
 - [✅] CRUD Data Marketing + Target (Admin)
-- [ ] Halaman listing dengan search, filter, pagination
-- [ ] Upload foto (perumahan, unit)
+- [✅] Halaman listing dengan search, filter, pagination
+- [✅] Upload foto (perumahan, unit)
 
 ### Deliverables:
 
@@ -48,10 +48,10 @@
 
 ### Tasks:
 
-- [ ] CRUD Prospek (Marketing)
-- [ ] CRUD Konsumen (Marketing + Admin)
-- [ ] Konversi prospek → konsumen
-- [ ] Upload KTP, KK
+- [✅] CRUD Prospek (Marketing)
+- [✅] CRUD Konsumen (Marketing + Admin)
+- [✅] Konversi prospek → konsumen
+- [✅] Upload KTP, KK
 - [ ] Filter: marketing hanya lihat data sendiri
 - [ ] Search by nama, NIK, no HP
 

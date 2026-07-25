@@ -9,28 +9,37 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UserRequest;
 use App\Models\User;
 use App\Services\UserService;
+use App\Traits\HasDataTable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class UserController extends Controller
 {
+    use HasDataTable;
+
+    protected array $searchable    = ['nama_lengkap', 'username', 'email', 'role', 'no_hp'];
+    protected array $filterable    = ['role', 'status'];
+    protected array $sortable      = ['nama_lengkap', 'username', 'role', 'status', 'created_at'];
+    protected string $defaultSortBy = 'created_at';
+
     public function __construct(
         private readonly UserService $userService,
     ) {}
 
     public function index(Request $request): View
     {
-        $users = $this->userService->getUsers($request);
-        $totalAdmin = User::where('role', Role::Admin->value)->count();
+        $query = User::query();
+        $users = $this->buildDataTableQuery($query, $request);
+
+        $totalAdmin    = User::where('role', Role::Admin->value)->count();
         $totalMarketing = User::where('role', Role::Marketing->value)->count();
         $totalManajemen = User::where('role', Role::Manajemen->value)->count();
+        $totalAll       = User::count();
 
-        return view('admin.users.index', compact(
-            'users',
-            'totalAdmin',
-            'totalMarketing',
-            'totalManajemen',
+        return view('admin.users.index', array_merge(
+            compact('users', 'totalAdmin', 'totalMarketing', 'totalManajemen', 'totalAll'),
+            $this->dataTableMeta($request),
         ));
     }
 

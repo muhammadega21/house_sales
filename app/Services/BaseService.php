@@ -64,7 +64,7 @@ class BaseService
         }
 
         // 2. Direct Column Filters
-        $ignoredKeys = ['page', 'per_page', 'search', 'sort_by', 'sort_direction'];
+        $ignoredKeys = ['page', 'per_page', 'search', 'sort_by', 'sort_dir', 'sort_direction'];
         $tableName = $modelInstance->getTable();
         
         $validFields = array_merge(
@@ -85,7 +85,7 @@ class BaseService
 
         // 3. Sorting
         $sortBy = $filters['sort_by'] ?? null;
-        $sortDirection = $filters['sort_direction'] ?? 'desc';
+        $sortDirection = $filters['sort_dir'] ?? $filters['sort_direction'] ?? 'desc';
         if ($sortBy && in_array($sortBy, $validFields, true)) {
             $query->orderBy($tableName . '.' . $sortBy, $sortDirection);
         } else {

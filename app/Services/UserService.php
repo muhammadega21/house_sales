@@ -54,6 +54,10 @@ class UserService extends BaseService
                 'foto-profil',
                 $user->foto_profil,
             );
+        } elseif (!empty($data['remove_foto_profil'])) {
+            // remove request: delete old file and set to null
+            $this->deleteFile($user->foto_profil);
+            $data['foto_profil'] = null;
         } else {
             unset($data['foto_profil']);
         }

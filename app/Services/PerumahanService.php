@@ -42,6 +42,9 @@ class PerumahanService extends BaseService
                 'foto-kawasan',
                 $perumahan->foto_kawasan,
             );
+        } elseif (!empty($data['remove_foto_kawasan'])) {
+            $this->deleteFile($perumahan->foto_kawasan);
+            $data['foto_kawasan'] = null;
         } else {
             unset($data['foto_kawasan']);
         }
@@ -83,15 +86,15 @@ class PerumahanService extends BaseService
     {
         $query = Perumahan::query()->withCount([
             'unitRumah',
-            'unitRumah as unit_tersedia_count' => fn ($unitQuery) => $unitQuery->where('status_unit', 'tersedia'),
-            'unitRumah as unit_dibooking_count' => fn ($unitQuery) => $unitQuery->where('status_unit', 'dibooking'),
-            'unitRumah as unit_dijual_count' => fn ($unitQuery) => $unitQuery->where('status_unit', 'dijual'),
-            'unitRumah as unit_dibatalkan_count' => fn ($unitQuery) => $unitQuery->where('status_unit', 'dibatalkan'),
+            'unitRumah as unit_tersedia_count' => fn($unitQuery) => $unitQuery->where('status_unit', 'tersedia'),
+            'unitRumah as unit_dibooking_count' => fn($unitQuery) => $unitQuery->where('status_unit', 'dibooking'),
+            'unitRumah as unit_dijual_count' => fn($unitQuery) => $unitQuery->where('status_unit', 'dijual'),
+            'unitRumah as unit_dibatalkan_count' => fn($unitQuery) => $unitQuery->where('status_unit', 'dibatalkan'),
         ]);
 
         if ($request->filled('search')) {
             $search = '%' . trim((string) $request->input('search')) . '%';
-            $query->where(fn ($builder) => $builder
+            $query->where(fn($builder) => $builder
                 ->where('nama_perumahan', 'like', $search)
                 ->orWhere('kota', 'like', $search));
         }

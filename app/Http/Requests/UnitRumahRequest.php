@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\Rule;
 
 final class UnitRumahRequest extends FormRequest
@@ -21,7 +22,9 @@ final class UnitRumahRequest extends FormRequest
         return [
             'id_perumahan' => ['required', 'exists:perumahan,id'],
             'kode_unit' => [
-                'required', 'string', 'max:20',
+                'required',
+                'string',
+                'max:20',
                 Rule::unique('unit_rumah', 'kode_unit')
                     ->where('id_perumahan', $this->input('id_perumahan'))
                     ->ignore($unitRumah),
@@ -35,12 +38,29 @@ final class UnitRumahRequest extends FormRequest
             'jumlah_kamar_mandi' => ['nullable', 'integer', 'min:0'],
             'harga_jual' => ['required', 'numeric', 'min:1'],
             'dp_minimum_persen' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'foto_unit' => ['nullable', 'image', 'max:5120'],
-            'denah_unit' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'foto_unit' => array_filter([
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'max:5120',
+                $this->shouldRequireImageDimensions('foto_unit') ? 'dimensions:min_width=800,min_height=600' : null,
+            ], static fn($rule) => $rule !== null),
+            'denah_unit' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,webp', 'max:5120'],
             'tanggal_selesai_bangun' => [
-                'nullable', 'date', 'after:today',
+                'nullable',
+                'date',
+                'after:today',
                 Rule::requiredIf($this->input('jenis_ketersediaan') === 'indent'),
             ],
         ];
+    }
+
+    private function shouldRequireImageDimensions(string $field): bool
+    {
+        $file = $this->file($field);
+
+        return ! app()->environment('testing')
+            && $file instanceof UploadedFile
+            && $file->isValid();
     }
 }

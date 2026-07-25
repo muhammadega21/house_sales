@@ -1,9 +1,9 @@
 <?php
 
+use App\Http\Controllers\Admin;
+use App\Http\Controllers\Manajemen;
+use App\Http\Controllers\Marketing;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Admin as Admin;
-use App\Http\Controllers\Marketing as Marketing;
-use App\Http\Controllers\Manajemen as Manajemen;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,7 +15,7 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';
 
 /*
 |--------------------------------------------------------------------------
@@ -64,6 +64,18 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/marketing/{marketing}/target', [Admin\MarketingController::class, 'setTarget'])->name('marketing.set-target');
     Route::post('/marketing/{marketing}/target', [Admin\MarketingController::class, 'storeTarget'])->name('marketing.store-target');
 
+    // Prospek Management
+    Route::get('/prospek', [Admin\ProspekController::class, 'index'])->name('prospek.index');
+    Route::get('/prospek/create', [Admin\ProspekController::class, 'create'])->name('prospek.create');
+    Route::post('/prospek', [Admin\ProspekController::class, 'store'])->name('prospek.store');
+    Route::get('/prospek/{id}/edit', [Admin\ProspekController::class, 'edit'])->name('prospek.edit');
+    Route::get('/prospek/{id}/convert', [Admin\ProspekController::class, 'convert'])->name('prospek.convert');
+    Route::post('/prospek/{id}/convert', [Admin\ProspekController::class, 'storeConvert'])->name('prospek.store-convert');
+    Route::put('/prospek/{id}', [Admin\ProspekController::class, 'update'])->name('prospek.update');
+    Route::delete('/prospek/{id}', [Admin\ProspekController::class, 'destroy'])->name('prospek.destroy');
+    Route::get('/prospek/{id}', [Admin\ProspekController::class, 'show'])->name('prospek.show');
+    Route::get('/prospek/stats', [Admin\ProspekController::class, 'stats'])->name('prospek.stats');
+
     // Simulasi Pembayaran
     Route::get('/simulasi', [Admin\SimulasiController::class, 'index'])->name('simulasi.index');
     Route::post('/simulasi/hitung', [Admin\SimulasiController::class, 'hitung'])->name('simulasi.hitung');
@@ -90,13 +102,22 @@ Route::middleware(['auth', 'role:marketing'])->prefix('marketing')->name('market
 
     // Prospek
     Route::get('/prospek', [Marketing\ProspekController::class, 'index'])->name('prospek.index');
+    Route::get('/prospek/create', [Marketing\ProspekController::class, 'create'])->name('prospek.create');
     Route::post('/prospek', [Marketing\ProspekController::class, 'store'])->name('prospek.store');
+    Route::get('/prospek/{id}/edit', [Marketing\ProspekController::class, 'edit'])->name('prospek.edit');
     Route::put('/prospek/{id}', [Marketing\ProspekController::class, 'update'])->name('prospek.update');
+    Route::delete('/prospek/{id}', [Marketing\ProspekController::class, 'destroy'])->name('prospek.destroy');
+    Route::get('/prospek/{id}/convert', [Marketing\ProspekController::class, 'convert'])->name('prospek.convert');
+    Route::post('/prospek/{id}/convert', [Marketing\ProspekController::class, 'storeConvert'])->name('prospek.store-convert');
 
-    // Konsumen
-    Route::get('/konsumen', [Marketing\KonsumenController::class, 'index'])->name('konsumen.index');
-    Route::post('/konsumen', [Marketing\KonsumenController::class, 'store'])->name('konsumen.store');
-    Route::put('/konsumen/{id}', [Marketing\KonsumenController::class, 'update'])->name('konsumen.update');
+// Konsumen
+Route::get('/konsumen', [Marketing\KonsumenController::class, 'index'])->name('konsumen.index');
+Route::get('/konsumen/create', [Marketing\KonsumenController::class, 'create'])->name('konsumen.create');
+Route::post('/konsumen', [Marketing\KonsumenController::class, 'store'])->name('konsumen.store');
+Route::get('/konsumen/{id}', [Marketing\KonsumenController::class, 'show'])->name('konsumen.show');
+Route::get('/konsumen/{id}/edit', [Marketing\KonsumenController::class, 'edit'])->name('konsumen.edit');
+Route::put('/konsumen/{id}', [Marketing\KonsumenController::class, 'update'])->name('konsumen.update');
+Route::delete('/konsumen/{id}', [Marketing\KonsumenController::class, 'destroy'])->name('konsumen.destroy');
 
     // Booking
     Route::get('/booking', [Marketing\BookingController::class, 'index'])->name('booking.index');
@@ -139,6 +160,3 @@ Route::middleware(['auth', 'role:manajemen'])->prefix('manajemen')->name('manaje
     Route::get('/laporan/export-pdf', [Manajemen\LaporanController::class, 'exportPdf'])->name('laporan.export-pdf');
     Route::get('/laporan/export-excel', [Manajemen\LaporanController::class, 'exportExcel'])->name('laporan.export-excel');
 });
-
-
-

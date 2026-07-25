@@ -85,7 +85,7 @@ class UnitRumahService extends BaseService
 
     public function getAvailable()
     {
-        return UnitRumah::query()->tersedia()->with('perumahan')->whereHas('perumahan', fn ($query) => $query->aktif())->get();
+        return UnitRumah::query()->tersedia()->with('perumahan')->whereHas('perumahan', fn($query) => $query->aktif())->get();
     }
 
     public function getWithFilters(Request $request): LengthAwarePaginator
@@ -93,7 +93,7 @@ class UnitRumahService extends BaseService
         $query = UnitRumah::query()->with('perumahan');
         if ($request->filled('search')) {
             $search = '%' . trim((string) $request->input('search')) . '%';
-            $query->where(fn ($q) => $q->where('kode_unit', 'like', $search)->orWhere('tipe_rumah', 'like', $search));
+            $query->where(fn($q) => $q->where('kode_unit', 'like', $search)->orWhere('tipe_rumah', 'like', $search));
         }
         foreach (['id_perumahan', 'kategori', 'status_unit', 'jenis_ketersediaan'] as $field) {
             if ($request->filled($field)) {
@@ -121,7 +121,7 @@ class UnitRumahService extends BaseService
         if ($data['jenis_ketersediaan'] === JenisKetersediaan::Indent->value && empty($data['tanggal_selesai_bangun'])) {
             throw ValidationException::withMessages(['tanggal_selesai_bangun' => 'Tanggal selesai bangun wajib diisi untuk unit indent.']);
         }
-        $duplicate = UnitRumah::where('id_perumahan', $data['id_perumahan'])->where('kode_unit', $data['kode_unit'])->when($unitId, fn ($q) => $q->whereKeyNot($unitId))->exists();
+        $duplicate = UnitRumah::where('id_perumahan', $data['id_perumahan'])->where('kode_unit', $data['kode_unit'])->when($unitId, fn($q) => $q->whereKeyNot($unitId))->exists();
         if ($duplicate) {
             throw ValidationException::withMessages(['kode_unit' => 'Kode unit sudah digunakan pada perumahan ini.']);
         }
@@ -130,8 +130,16 @@ class UnitRumahService extends BaseService
     private function storeFiles(array $data, ?UnitRumah $unit = null): array
     {
         foreach (['foto_unit' => 'foto-unit', 'denah_unit' => 'denah-unit'] as $field => $folder) {
+            // If new file uploaded, replace and delete old
             if (($data[$field] ?? null) instanceof UploadedFile) {
                 $data[$field] = $this->uploadFile($data[$field], $folder, $unit?->{$field});
+
+                // If remove flag is present, delete old file and set null
+            } elseif (!empty($data['remove_' . $field])) {
+                $this->deleteFile($unit?->{$field});
+                $data[$field] = null;
+
+                // Otherwise leave field untouched (unset so update doesn't overwrite)
             } else {
                 unset($data[$field]);
             }
