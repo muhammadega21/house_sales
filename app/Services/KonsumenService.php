@@ -71,12 +71,6 @@ class KonsumenService extends BaseService
     {
         $konsumen = $this->findById($model, $id, ['bookings']);
 
-        if ($konsumen->bookings()->exists()) {
-            throw ValidationException::withMessages([
-                'konsumen' => 'Konsumen tidak dapat dihapus karena sudah memiliki booking.',
-            ]);
-        }
-
         $this->deleteFile($konsumen->foto_ktp);
         $this->deleteFile($konsumen->foto_kk);
 

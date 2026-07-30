@@ -58,6 +58,8 @@ final class KonsumenController extends Controller
             abort(404, 'Konsumen tidak ditemukan.');
         }
 
+        $this->authorize('view', $konsumen);
+
         return view('admin.konsumen.show', compact('konsumen'));
     }
 
@@ -65,11 +67,17 @@ final class KonsumenController extends Controller
     {
         $konsumen = $this->konsumenService->findById(Konsumen::class, $id);
 
+        $this->authorize('update', $konsumen);
+
         return view('admin.konsumen.edit', compact('konsumen'));
     }
 
     public function update(KonsumenRequest $request, int $id): RedirectResponse
     {
+        $konsumen = Konsumen::findOrFail($id);
+
+        $this->authorize('update', $konsumen);
+
         try {
             $this->konsumenService->update($request->validated(), $id);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -81,6 +89,10 @@ final class KonsumenController extends Controller
 
     public function destroy(int $id): RedirectResponse
     {
+        $konsumen = Konsumen::findOrFail($id);
+
+        $this->authorize('delete', $konsumen);
+
         try {
             $this->konsumenService->delete($id);
         } catch (\Illuminate\Validation\ValidationException $e) {

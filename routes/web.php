@@ -76,6 +76,19 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/prospek/{id}', [Admin\ProspekController::class, 'show'])->name('prospek.show');
     Route::get('/prospek/stats', [Admin\ProspekController::class, 'stats'])->name('prospek.stats');
 
+    // Booking Management
+    Route::get('/booking', [Admin\BookingController::class, 'index'])->name('booking.index');
+    Route::get('/booking/create', [Admin\BookingController::class, 'create'])->name('booking.create');
+    Route::post('/booking', [Admin\BookingController::class, 'store'])->name('booking.store');
+    Route::get('/booking/{id}', [Admin\BookingController::class, 'show'])->name('booking.show');
+    Route::get('/booking/{id}/edit', [Admin\BookingController::class, 'edit'])->name('booking.edit');
+    Route::put('/booking/{id}', [Admin\BookingController::class, 'update'])->name('booking.update');
+    Route::get('/booking/{id}/cancel', [Admin\BookingController::class, 'cancel'])->name('booking.cancel');
+    Route::post('/booking/{id}/cancel', [Admin\BookingController::class, 'processCancel'])->name('booking.process-cancel');
+    Route::delete('/prospek/{id}', [Admin\ProspekController::class, 'destroy'])->name('prospek.destroy');
+    Route::get('/prospek/{id}', [Admin\ProspekController::class, 'show'])->name('prospek.show');
+    Route::get('/prospek/stats', [Admin\ProspekController::class, 'stats'])->name('prospek.stats');
+
     // Simulasi Pembayaran
     Route::get('/simulasi', [Admin\SimulasiController::class, 'index'])->name('simulasi.index');
     Route::post('/simulasi/hitung', [Admin\SimulasiController::class, 'hitung'])->name('simulasi.hitung');
@@ -104,6 +117,7 @@ Route::middleware(['auth', 'role:marketing'])->prefix('marketing')->name('market
     Route::get('/prospek', [Marketing\ProspekController::class, 'index'])->name('prospek.index');
     Route::get('/prospek/create', [Marketing\ProspekController::class, 'create'])->name('prospek.create');
     Route::post('/prospek', [Marketing\ProspekController::class, 'store'])->name('prospek.store');
+    Route::get('/prospek/{id}', [Marketing\ProspekController::class, 'show'])->name('prospek.show');
     Route::get('/prospek/{id}/edit', [Marketing\ProspekController::class, 'edit'])->name('prospek.edit');
     Route::put('/prospek/{id}', [Marketing\ProspekController::class, 'update'])->name('prospek.update');
     Route::delete('/prospek/{id}', [Marketing\ProspekController::class, 'destroy'])->name('prospek.destroy');
@@ -121,7 +135,14 @@ Route::delete('/konsumen/{id}', [Marketing\KonsumenController::class, 'destroy']
 
     // Booking
     Route::get('/booking', [Marketing\BookingController::class, 'index'])->name('booking.index');
+    Route::get('/booking/create', [Marketing\BookingController::class, 'create'])->name('booking.create');
     Route::post('/booking', [Marketing\BookingController::class, 'store'])->name('booking.store');
+    Route::get('/booking/{id}', [Marketing\BookingController::class, 'show'])->name('booking.show');
+    Route::get('/booking/{id}/edit', [Marketing\BookingController::class, 'edit'])->name('booking.edit');
+    Route::put('/booking/{id}', [Marketing\BookingController::class, 'update'])->name('booking.update');
+    Route::get('/booking/{id}/cancel', [Marketing\BookingController::class, 'cancel'])->name('booking.cancel');
+    Route::post('/booking/{id}/cancel', [Marketing\BookingController::class, 'processCancel'])->name('booking.process-cancel');
+    Route::get('/booking/cek-unit/{idUnit}', [Marketing\BookingController::class, 'cekUnit'])->name('booking.cek-unit');
 
     // Dokumen
     Route::get('/dokumen/{id_konsumen}', [Marketing\DokumenController::class, 'index'])->name('dokumen.index');

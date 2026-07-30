@@ -77,9 +77,11 @@ final class KonsumenController extends Controller
     {
         $konsumen = $this->konsumenService->getDetail($id);
 
-        if (!$konsumen || auth()->id() !== $konsumen->id_marketing) {
-            abort(403, 'Anda tidak memiliki akses ke data konsumen ini.');
+        if (!$konsumen) {
+            abort(404, 'Konsumen tidak ditemukan.');
         }
+
+        $this->authorize('view', $konsumen);
 
         return view('marketing.konsumen.show', compact('konsumen'));
     }
@@ -88,9 +90,7 @@ final class KonsumenController extends Controller
     {
         $konsumen = $this->konsumenService->findById(Konsumen::class, $id);
 
-        if (auth()->id() !== $konsumen->id_marketing) {
-            abort(403, 'Anda tidak memiliki akses untuk mengubah konsumen ini.');
-        }
+        $this->authorize('update', $konsumen);
 
         return view('marketing.konsumen.edit', compact('konsumen'));
     }
@@ -99,9 +99,7 @@ final class KonsumenController extends Controller
     {
         $konsumen = Konsumen::findOrFail($id);
 
-        if (auth()->id() !== $konsumen->id_marketing) {
-            abort(403, 'Anda tidak memiliki akses untuk mengubah konsumen ini.');
-        }
+        $this->authorize('update', $konsumen);
 
         try {
             $this->konsumenService->update($request->validated(), Konsumen::class, $id);
@@ -116,9 +114,7 @@ final class KonsumenController extends Controller
     {
         $konsumen = Konsumen::findOrFail($id);
 
-        if (auth()->id() !== $konsumen->id_marketing) {
-            abort(403, 'Anda tidak memiliki akses untuk menghapus konsumen ini.');
-        }
+        $this->authorize('delete', $konsumen);
 
         try {
             $this->konsumenService->delete($id);

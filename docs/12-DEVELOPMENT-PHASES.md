@@ -51,9 +51,9 @@
 - [✅] CRUD Prospek (Marketing)
 - [✅] CRUD Konsumen (Marketing + Admin)
 - [✅] Konversi prospek → konsumen
-- [✅] Upload KTP, KK
-- [ ] Filter: marketing hanya lihat data sendiri
-- [ ] Search by nama, NIK, no HP
+- [✅] Upload Dokumen Identitas (KTP, KK)
+- [✅] Policy & Filter Data (Marketing hanya lihat milik sendiri)
+- [✅] Dashboard Prospek & Pipeline
 
 ### Deliverables:
 
@@ -67,14 +67,21 @@
 
 ### Tasks:
 
-- [ ] Form booking (pilih konsumen + unit)
+<!-- - [ ] Form booking (pilih konsumen + unit)
 - [ ] Validasi ketersediaan unit
 - [ ] Generate kode booking otomatis
 - [ ] Update status unit saat booking
 - [ ] Input pembayaran (booking fee, DP, cicilan)
 - [ ] Upload bukti bayar
 - [ ] Verifikasi pembayaran (Admin)
-- [ ] Status pembayaran (pending/diverifikasi/ditolak)
+- [ ] Status pembayaran (pending/diverifikasi/ditolak) -->
+
+- [✅] CRUD Booking (Marketing + Admin)
+- [✅] Generate Kode Booking Otomatis
+- [ ] Input Pembayaran (Marketing)
+- [ ] Verifikasi Pembayaran (Admin)
+- [ ] Status Unit Otomatis & Side Effects
+- [ ] Detail Booking & Riwayat Pembayaran
 
 ### Deliverables:
 

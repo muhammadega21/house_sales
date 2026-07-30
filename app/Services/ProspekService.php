@@ -157,6 +157,8 @@ class ProspekService extends BaseService
                 ]);
             }
 
+            $dataKonsumen['id_marketing'] = $prospek->id_marketing;
+
             $konsumen = $this->konsumenService->create($dataKonsumen);
 
             $prospek->update(['status_prospek' => StatusProspek::JadiKonsumen->value]);

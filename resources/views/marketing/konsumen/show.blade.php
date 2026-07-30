@@ -135,7 +135,7 @@
         };
     @endphp
     <span class="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold border {{ $payColors }}">
-        {{ __($payStatus) }}
+        {{ $payStatus->label() }}
     </span>
 </td>
                                         <td class="px-4 py-3 font-semibold">Rp {{ number_format($booking->booking_fee, 0, ',', '.') }}</td>

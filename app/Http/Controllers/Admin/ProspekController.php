@@ -68,11 +68,17 @@ final class ProspekController extends Controller
     {
         $prospek = $this->prospekService->findById(Prospek::class, $id);
 
+        $this->authorize('update', $prospek);
+
         return view('admin.prospek.edit', compact('prospek'));
     }
 
     public function update(ProspekRequest $request, int $id): RedirectResponse
     {
+        $prospek = Prospek::findOrFail($id);
+
+        $this->authorize('update', $prospek);
+
         $this->prospekService->update($request->validated(), Prospek::class, $id);
 
         return redirect()->route('admin.prospek.index')->with('success', 'Prospek berhasil diperbarui.');
@@ -80,6 +86,10 @@ final class ProspekController extends Controller
 
     public function destroy(int $id): RedirectResponse
     {
+        $prospek = Prospek::findOrFail($id);
+
+        $this->authorize('delete', $prospek);
+
         $this->prospekService->delete(Prospek::class, $id);
 
         return redirect()->route('admin.prospek.index')->with('success', 'Prospek berhasil dihapus.');
@@ -88,6 +98,8 @@ final class ProspekController extends Controller
     public function convert(int $id): View
     {
         $prospek = $this->prospekService->findById(Prospek::class, $id, ['marketing']);
+
+        $this->authorize('convert', $prospek);
 
         return view('marketing.prospek.convert', [
             'prospek' => $prospek,
@@ -98,6 +110,8 @@ final class ProspekController extends Controller
     public function storeConvert(Request $request, int $id): RedirectResponse
     {
         $prospek = $this->prospekService->findById(Prospek::class, $id);
+
+        $this->authorize('convert', $prospek);
 
         $validated = $request->validate([
             'nama_lengkap' => ['required', 'string', 'max:100'],

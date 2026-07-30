@@ -46,6 +46,10 @@ class KonsumenPolicy
             return true;
         }
 
-        return false;
+        if ($konsumen->bookings()->exists()) {
+            return false;
+        }
+
+        return $user->id === $konsumen->id_marketing;
     }
 }

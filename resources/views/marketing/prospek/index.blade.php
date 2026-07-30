@@ -100,16 +100,19 @@
                                     @endif
                                 </td>
                                 <td class="px-4 py-4">
-                                    @php $status = $prospek->status_prospek; @endphp
-                                    <span
-                                        class="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold border {{ match ($status->value) {
+                                    @php
+                                        $status = $prospek->status_prospek;
+                                        $statusColor = match ($status->value) {
                                             'baru' => 'bg-amber-100 text-amber-800 border-amber-200',
                                             'dihubungi' => 'bg-sky-100 text-sky-800 border-sky-200',
                                             'berminat' => 'bg-indigo-100 text-indigo-800 border-indigo-200',
                                             'tidak_berminat' => 'bg-red-100 text-red-800 border-red-200',
                                             'jadi_konsumen' => 'bg-emerald-100 text-emerald-800 border-emerald-200',
                                             default => 'bg-gray-100 text-gray-800 border-gray-200',
-                                        } }}">
+                                        };
+                                    @endphp
+                                    <span
+                                        class="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold border {{ $statusColor }}">
                                         {{ $status->label() }}
                                     </span>
                                 </td>

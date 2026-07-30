@@ -51,6 +51,13 @@ final class ProspekController extends Controller
         return view('marketing.prospek.create');
     }
 
+    public function show(int $id): View
+    {
+        $prospek = $this->prospekService->findById(Prospek::class, $id, ['marketing']);
+
+        return view('marketing.prospek.show', compact('prospek'));
+    }
+
     public function store(ProspekRequest $request): RedirectResponse
     {
         $this->prospekService->create($request->validated());
@@ -66,15 +73,17 @@ final class ProspekController extends Controller
     {
         $prospek = $this->prospekService->findById(Prospek::class, $id);
 
-        if ($prospek->id_marketing !== auth()->id()) {
-            abort(403, 'Anda tidak memiliki akses untuk mengubah prospek ini.');
-        }
+        $this->authorize('update', $prospek);
 
         return view('marketing.prospek.edit', compact('prospek'));
     }
 
     public function update(ProspekRequest $request, int $id): RedirectResponse
     {
+        $prospek = Prospek::findOrFail($id);
+
+        $this->authorize('update', $prospek);
+
         $this->prospekService->update($request->validated(), Prospek::class, $id);
 
         return redirect()->route('marketing.prospek.index')->with('success', 'Prospek berhasil diperbarui.');
@@ -82,6 +91,10 @@ final class ProspekController extends Controller
 
     public function destroy(int $id): RedirectResponse
     {
+        $prospek = Prospek::findOrFail($id);
+
+        $this->authorize('delete', $prospek);
+
         $this->prospekService->delete(Prospek::class, $id);
 
         return redirect()->route('marketing.prospek.index')->with('success', 'Prospek berhasil dihapus.');
@@ -91,13 +104,7 @@ final class ProspekController extends Controller
     {
         $prospek = $this->prospekService->findById(Prospek::class, $id);
 
-        if ($prospek->id_marketing !== auth()->id()) {
-            abort(403, 'Anda tidak memiliki akses.');
-        }
-
-        if ($prospek->status_prospek->value !== 'berminat') {
-            abort(403, 'Prospek harus berstatus berminat untuk dikonversi menjadi konsumen.');
-        }
+        $this->authorize('convert', $prospek);
 
         return view('marketing.prospek.convert', [
             'prospek' => $prospek,
@@ -109,9 +116,7 @@ final class ProspekController extends Controller
     {
         $prospek = $this->prospekService->findById(Prospek::class, $id);
 
-        if ($prospek->id_marketing !== auth()->id()) {
-            abort(403, 'Anda tidak memiliki akses.');
-        }
+        $this->authorize('convert', $prospek);
 
         if ($prospek->status_prospek->value !== 'berminat') {
             return redirect()->back()->withErrors(['status_prospek' => 'Prospek harus berstatus berminat untuk dikonversi.']);

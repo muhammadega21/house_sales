@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\StatusPembayaranFee;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -32,7 +33,49 @@ class Booking extends Model
             'tanggal_booking' => 'date',
             'tanggal_bayar_fee' => 'date',
             'booking_fee' => 'decimal:2',
+            'status_pembayaran_fee' => StatusPembayaranFee::class,
         ];
+    }
+
+    public function scopeStatusPembayaran($query, ?string $status)
+    {
+        if (!$status) return $query;
+
+        return $query->where('status_pembayaran_fee', $status);
+    }
+
+    public function scopeStatusPenjualan($query, ?string $status)
+    {
+        if (!$status) return $query;
+
+        return $query->whereHas('statusHistory', function ($q) use ($status) {
+            $q->where('status_sesudah', $status);
+        });
+    }
+
+    public function scopePerumahan($query, ?int $idPerumahan)
+    {
+        if (!$idPerumahan) return $query;
+
+        return $query->whereHas('unit', function ($q) use ($idPerumahan) {
+            $q->where('id_perumahan', $idPerumahan);
+        });
+    }
+
+    public function scopeKategori($query, ?string $kategori)
+    {
+        if (!$kategori) return $query;
+
+        return $query->whereHas('unit', function ($q) use ($kategori) {
+            $q->where('kategori', $kategori);
+        });
+    }
+
+    public function scopeMarketing($query, ?int $idMarketing)
+    {
+        if (!$idMarketing) return $query;
+
+        return $query->where('id_marketing', $idMarketing);
     }
 
     public function konsumen(): BelongsTo

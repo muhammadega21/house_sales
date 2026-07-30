@@ -148,7 +148,7 @@
                                                     default => 'bg-amber-100 text-amber-800 border-amber-200',
                                                 };
                                             @endphp
-                                            <span class="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold border {{ $pc }}">{{ __($ps) }}</span>
+                                            <span class="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold border {{ $pc }}">{{ $ps->label() }}</span>
                                         </td>
                                         <td class="px-4 py-3 font-semibold">Rp {{ number_format($booking->booking_fee, 0, ',', '.') }}</td>
                                     </tr>
@@ -166,8 +166,22 @@
                             <div class="rounded-lg border border-gray-200 bg-white p-3">
                                 <p class="text-xs font-semibold text-gray-900 mb-1">{{ $dokumen->jenis_dokumen ?? 'Lainnya' }}</p>
                                 <p class="text-xs text-gray-500 mb-2">{{ $dokumen->nama_file }}</p>
-                                <span class="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold border {{ match($dokumen->status_verifikasi) { 'valid' => 'bg-emerald-100 text-emerald-800 border-emerald-200', 'tidak_valid' => 'bg-red-100 text-red-800 border-red-200', 'perlu_revisi' => 'bg-amber-100 text-amber-800 border-amber-200', default => 'bg-gray-100 text-gray-800 border-gray-200' } }">
-                                    {{ match($dokumen->status_verifikasi) { 'valid' => 'Valid', 'tidak_valid' => 'Tidak Valid', 'perlu_revisi' => 'Perlu Revisi', default => 'Belum Diverifikasi' } }}
+                                @php
+                                    $verifikasiColor = match($dokumen->status_verifikasi) {
+                                        'valid' => 'bg-emerald-100 text-emerald-800 border-emerald-200',
+                                        'tidak_valid' => 'bg-red-100 text-red-800 border-red-200',
+                                        'perlu_revisi' => 'bg-amber-100 text-amber-800 border-amber-200',
+                                        default => 'bg-gray-100 text-gray-800 border-gray-200',
+                                    };
+                                    $verifikasiLabel = match($dokumen->status_verifikasi) {
+                                        'valid' => 'Valid',
+                                        'tidak_valid' => 'Tidak Valid',
+                                        'perlu_revisi' => 'Perlu Revisi',
+                                        default => 'Belum Diverifikasi',
+                                    };
+                                @endphp
+                                <span class="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold border {{ $verifikasiColor }}">
+                                    {{ $verifikasiLabel }}
                                 </span>
                             </div>
                         @endforeach

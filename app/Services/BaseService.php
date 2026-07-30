@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use App\Traits\HasFileUpload;
 
 /**
  * Base service class providing generic CRUD operations.
@@ -17,6 +18,7 @@ use Illuminate\Support\Collection;
  */
 class BaseService
 {
+    use HasFileUpload;
     /**
      * Retrieve all records with optional filters, search, sorting, and relations.
      *

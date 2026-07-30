@@ -2,6 +2,13 @@
 
 namespace App\Providers;
 
+use App\Models\Booking;
+use App\Models\Konsumen;
+use App\Models\Prospek;
+use App\Policies\BookingPolicy;
+use App\Policies\KonsumenPolicy;
+use App\Policies\ProspekPolicy;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +26,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Gate::policy(Prospek::class, ProspekPolicy::class);
+        Gate::policy(Konsumen::class, KonsumenPolicy::class);
+        Gate::policy(Booking::class, BookingPolicy::class);
     }
 }
