@@ -11,6 +11,8 @@ class DokumenKpr extends Model
 {
     protected $table = 'dokumen_kpr';
 
+    public $timestamps = false;
+
     protected $fillable = [
         'id_konsumen',
         'jenis_dokumen',
@@ -21,6 +23,7 @@ class DokumenKpr extends Model
         'status_verifikasi',
         'catatan_verifikasi',
         'diupload_oleh',
+        'tanggal_verifikasi',
     ];
 
     protected function casts(): array

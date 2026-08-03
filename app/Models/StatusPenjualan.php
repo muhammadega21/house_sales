@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\StatusPenjualan as StatusPenjualanEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class StatusPenjualan extends Model
 {
     protected $table = 'status_penjualan';
+
+    public $timestamps = false;
 
     protected $fillable = [
         'id_booking',
@@ -25,6 +28,7 @@ class StatusPenjualan extends Model
     {
         return [
             'tanggal_perubahan' => 'datetime',
+            'status_saat_ini' => StatusPenjualanEnum::class,
         ];
     }
 
@@ -41,5 +45,10 @@ class StatusPenjualan extends Model
     public function unit(): BelongsTo
     {
         return $this->belongsTo(UnitRumah::class, 'id_unit');
+    }
+
+    public function diubahOleh(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'diubah_oleh');
     }
 }

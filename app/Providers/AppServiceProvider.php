@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Booking;
 use App\Models\Konsumen;
 use App\Models\Prospek;
+use App\Observers\BookingObserver;
 use App\Policies\BookingPolicy;
 use App\Policies\KonsumenPolicy;
 use App\Policies\ProspekPolicy;
@@ -26,6 +27,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Booking::observe(BookingObserver::class);
+
         Gate::policy(Prospek::class, ProspekPolicy::class);
         Gate::policy(Konsumen::class, KonsumenPolicy::class);
         Gate::policy(Booking::class, BookingPolicy::class);

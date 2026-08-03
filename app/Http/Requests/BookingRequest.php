@@ -48,10 +48,11 @@ final class BookingRequest extends FormRequest
 
     public function withValidator($validator): void
     {
-        $validator->after(function ($validator) {
+        $isUpdate = $this->isMethod('put') || $this->isMethod('patch');
+        $validator->after(function ($validator) use ($isUpdate) {
             $unit = UnitRumah::find($this->input('id_unit'));
 
-            if ($unit && $unit->status_unit !== StatusUnit::Tersedia) {
+            if ($unit && !$isUpdate && $unit->status_unit !== StatusUnit::Tersedia) {
                 $validator->errors()->add('id_unit', 'Unit harus berstatus tersedia untuk dapat dibooking.');
             }
 

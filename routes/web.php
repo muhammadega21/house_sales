@@ -15,7 +15,7 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
 
 /*
 |--------------------------------------------------------------------------
@@ -44,6 +44,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/pembayaran', [Admin\PembayaranController::class, 'index'])->name('pembayaran.index');
     Route::get('/pembayaran/{id}/verifikasi', [Admin\PembayaranController::class, 'verifikasi'])->name('pembayaran.verifikasi');
     Route::put('/pembayaran/{id}/verifikasi', [Admin\PembayaranController::class, 'prosesVerifikasi'])->name('pembayaran.proses-verifikasi');
+    Route::get('/pembayaran/{id}/tolak', [Admin\PembayaranController::class, 'tolak'])->name('pembayaran.tolak');
+    Route::put('/pembayaran/{id}/tolak', [Admin\PembayaranController::class, 'prosesTolak'])->name('pembayaran.proses-tolak');
+    Route::get('/pembayaran/{id}', [Admin\PembayaranController::class, 'show'])->name('pembayaran.show');
 
     // Dokumen KPR Management & Verification
     Route::get('/dokumen', [Admin\DokumenController::class, 'index'])->name('dokumen.index');
@@ -124,14 +127,14 @@ Route::middleware(['auth', 'role:marketing'])->prefix('marketing')->name('market
     Route::get('/prospek/{id}/convert', [Marketing\ProspekController::class, 'convert'])->name('prospek.convert');
     Route::post('/prospek/{id}/convert', [Marketing\ProspekController::class, 'storeConvert'])->name('prospek.store-convert');
 
-// Konsumen
-Route::get('/konsumen', [Marketing\KonsumenController::class, 'index'])->name('konsumen.index');
-Route::get('/konsumen/create', [Marketing\KonsumenController::class, 'create'])->name('konsumen.create');
-Route::post('/konsumen', [Marketing\KonsumenController::class, 'store'])->name('konsumen.store');
-Route::get('/konsumen/{id}', [Marketing\KonsumenController::class, 'show'])->name('konsumen.show');
-Route::get('/konsumen/{id}/edit', [Marketing\KonsumenController::class, 'edit'])->name('konsumen.edit');
-Route::put('/konsumen/{id}', [Marketing\KonsumenController::class, 'update'])->name('konsumen.update');
-Route::delete('/konsumen/{id}', [Marketing\KonsumenController::class, 'destroy'])->name('konsumen.destroy');
+    // Konsumen
+    Route::get('/konsumen', [Marketing\KonsumenController::class, 'index'])->name('konsumen.index');
+    Route::get('/konsumen/create', [Marketing\KonsumenController::class, 'create'])->name('konsumen.create');
+    Route::post('/konsumen', [Marketing\KonsumenController::class, 'store'])->name('konsumen.store');
+    Route::get('/konsumen/{id}', [Marketing\KonsumenController::class, 'show'])->name('konsumen.show');
+    Route::get('/konsumen/{id}/edit', [Marketing\KonsumenController::class, 'edit'])->name('konsumen.edit');
+    Route::put('/konsumen/{id}', [Marketing\KonsumenController::class, 'update'])->name('konsumen.update');
+    Route::delete('/konsumen/{id}', [Marketing\KonsumenController::class, 'destroy'])->name('konsumen.destroy');
 
     // Booking
     Route::get('/booking', [Marketing\BookingController::class, 'index'])->name('booking.index');
@@ -146,11 +149,20 @@ Route::delete('/konsumen/{id}', [Marketing\KonsumenController::class, 'destroy']
 
     // Dokumen
     Route::get('/dokumen/{id_konsumen}', [Marketing\DokumenController::class, 'index'])->name('dokumen.index');
-    Route::post('/dokumen/upload', [Marketing\DokumenController::class, 'upload'])->name('dokumen.upload');
+    Route::get('/dokumen/{id_konsumen}/create', [Marketing\DokumenController::class, 'create'])->name('dokumen.create');
+    Route::post('/dokumen/upload', [Marketing\DokumenController::class, 'store'])->name('dokumen.store');
+    Route::delete('/dokumen/{id}', [Marketing\DokumenController::class, 'destroy'])->name('dokumen.destroy');
+    Route::get('/dokumen/{id}/replace', [Marketing\DokumenController::class, 'replace'])->name('dokumen.replace');
+    Route::put('/dokumen/{id}/replace', [Marketing\DokumenController::class, 'update'])->name('dokumen.update');
+    Route::get('/dokumen/{id}/download', [Marketing\DokumenController::class, 'download'])->name('dokumen.download');
+    Route::get('/dokumen/{id}/preview', [Marketing\DokumenController::class, 'preview'])->name('dokumen.preview');
 
     // Pembayaran
     Route::get('/pembayaran', [Marketing\PembayaranController::class, 'index'])->name('pembayaran.index');
+    Route::get('/pembayaran/create', [Marketing\PembayaranController::class, 'create'])->name('pembayaran.create');
+    Route::get('/pembayaran/info-booking/{idBooking}', [Marketing\PembayaranController::class, 'infoBooking'])->name('pembayaran.info-booking');
     Route::post('/pembayaran', [Marketing\PembayaranController::class, 'store'])->name('pembayaran.store');
+    Route::get('/pembayaran/{id}', [Marketing\PembayaranController::class, 'show'])->name('pembayaran.show');
 
     // Pengajuan KPR
     Route::get('/pengajuan-kpr', [Marketing\PengajuanKprController::class, 'index'])->name('pengajuan-kpr.index');

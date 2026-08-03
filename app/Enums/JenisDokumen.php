@@ -42,4 +42,36 @@ enum JenisDokumen: string
             self::Lainnya => 'secondary',
         };
     }
+
+    public function wajib(): bool
+    {
+        return match($this) {
+            self::Ktp, self::Kk, self::Npwp, self::SlipGaji, self::RekeningKoran, self::SuratKerja, self::FormulirKpr => true,
+            self::SuratNikah, self::SuratKeteranganPenghasilan, self::Lainnya => false,
+        };
+    }
+
+    public function maxsize(): int
+    {
+        return match($this) {
+            self::SlipGaji, self::RekeningKoran, self::Lainnya => 10240,
+            self::Ktp, self::Kk, self::Npwp, self::SuratKerja, self::SuratNikah, self::SuratKeteranganPenghasilan, self::FormulirKpr => 5120,
+        };
+    }
+
+    public function keterangan(): string
+    {
+        return match($this) {
+            self::Ktp => 'Salinan KTP asli yang masih berlaku, pastikan jelas dan terbaca.',
+            self::Kk => 'Salinan Kartu Keluarga yang masih berlaku.',
+            self::Npwp => 'Nomor Pokok Wajib Pajak (NPWP) yang masih berlaku.',
+            self::SlipGaji => 'Slip gaji 3 bulan terakhir dari perusahaan.',
+            self::RekeningKoran => 'Rekening koran 3 bulan terakhir dari bank.',
+            self::SuratKerja => 'Surat keterangan kerja dari perusahaan/tempat kerja.',
+            self::SuratNikah => 'Salinan akte nikah atau surat keterangan nikah.',
+            self::SuratKeteranganPenghasilan => 'Surat keterangan penghasilan dari pihak yang berwenang.',
+            self::FormulirKpr => 'Formulir permohonan KPR dari bank yang dituju.',
+            self::Lainnya => 'Dokumen pendukung tambahan sesuai kebutuhan.',
+        };
+    }
 }

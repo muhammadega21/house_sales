@@ -8,11 +8,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\BookingRequest;
 use App\Models\Booking;
 use App\Models\Konsumen;
+use App\Models\Perumahan;
 use App\Models\UnitRumah;
 use App\Models\User;
 use App\Services\BookingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 final class BookingController extends Controller
@@ -33,7 +35,7 @@ final class BookingController extends Controller
             ->with(['konsumen', 'unit.perumahan', 'marketing', 'pembayaran', 'statusHistory']);
 
         if ($search !== '') {
-            $term = '%' . $search . '%';
+            $term = '%'.$search.'%';
             $query->where(function ($q) use ($term) {
                 $q->where('kode_booking', 'like', $term)
                     ->orWhereHas('konsumen', function ($q) use ($term) {
@@ -80,7 +82,7 @@ final class BookingController extends Controller
         $marketingOptions = User::marketing()->aktif()->orderBy('nama_lengkap')->get()
             ->mapWithKeys(fn ($m) => [$m->id => $m->nama_lengkap]);
 
-        $perumahanOptions = \App\Models\Perumahan::query()
+        $perumahanOptions = Perumahan::query()
             ->where('status', 'aktif')
             ->orderBy('nama_perumahan')
             ->get()
@@ -98,20 +100,26 @@ final class BookingController extends Controller
     {
         $booking = $this->bookingService->getWithRelations($id);
 
-        if (!$booking) {
+        if (! $booking) {
             abort(404, 'Booking tidak ditemukan.');
         }
 
         $this->authorize('view', $booking);
 
-        return view('admin.booking.show', compact('booking'));
+        $totalTerverifikasi = $booking->pembayaran
+            ->where('status_verifikasi', 'diverifikasi')
+            ->sum('nominal');
+
+        $sisaTagihan = $booking->unit->harga_jual - $totalTerverifikasi;
+
+        return view('admin.booking.show', compact('booking', 'totalTerverifikasi', 'sisaTagihan'));
     }
 
     public function edit(int $id): View
     {
         $booking = $this->bookingService->getWithRelations($id);
 
-        if (!$booking) {
+        if (! $booking) {
             abort(404, 'Booking tidak ditemukan.');
         }
 
@@ -121,14 +129,14 @@ final class BookingController extends Controller
             ->with('marketing')
             ->orderBy('nama_lengkap')
             ->get()
-            ->mapWithKeys(fn ($k) => [$k->id => $k->nama_lengkap . ' - ' . $k->nik . ' (' . ($k->marketing?->nama_lengkap ?? '-') . ')']);
+            ->mapWithKeys(fn ($k) => [$k->id => $k->nama_lengkap.' - '.$k->nik.' ('.($k->marketing?->nama_lengkap ?? '-').')']);
 
         $unitOptions = UnitRumah::query()
             ->where('status_unit', 'tersedia')
             ->with('perumahan')
             ->orderBy('kode_unit')
             ->get()
-            ->mapWithKeys(fn ($u) => [$u->id => $u->kode_unit . ' - ' . $u->tipe_rumah . ' (' . $u->perumahan->nama_perumahan . ')']);
+            ->mapWithKeys(fn ($u) => [$u->id => $u->kode_unit.' - '.$u->tipe_rumah.' ('.$u->perumahan->nama_perumahan.')']);
 
         return view('admin.booking.edit', compact('booking', 'konsumenOptions', 'unitOptions'));
     }
@@ -141,7 +149,7 @@ final class BookingController extends Controller
 
         try {
             $this->bookingService->update($request->validated(), $id);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return redirect()->back()->withErrors($e->errors())->withInput();
         }
 
@@ -152,7 +160,7 @@ final class BookingController extends Controller
     {
         $booking = $this->bookingService->getWithRelations($id);
 
-        if (!$booking) {
+        if (! $booking) {
             abort(404, 'Booking tidak ditemukan.');
         }
 
@@ -172,9 +180,11 @@ final class BookingController extends Controller
         ]);
 
         try {
-            $this->bookingService->cancel($id, $request->input('alasan'));
-        } catch (\Illuminate\Validation\ValidationException $e) {
+            $this->bookingService->cancel($id, $request->input('alasan'), auth()->id());
+        } catch (ValidationException $e) {
             return redirect()->back()->withErrors($e->errors())->withInput();
+        } catch (\InvalidArgumentException $e) {
+            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
         }
 
         return redirect()->route('admin.booking.index')->with('success', 'Booking berhasil dibatalkan.');

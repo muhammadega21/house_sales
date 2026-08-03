@@ -4,6 +4,10 @@
 ])
 
 @php
+    $rawStatus = $status;
+    if ($status instanceof \BackedEnum) {
+        $status = $status->value;
+    }
     $normalizedStatus = strtolower(trim((string)$status));
 
     // Default mapping based on the UI/UX Guidelines
@@ -21,7 +25,7 @@
     $label = match($normalizedStatus) {
         'pengajuan_kpr' => 'Pengajuan KPR',
         'ready_stock' => 'Ready Stock',
-        default => ucwords(str_replace('_', ' ', $status)),
+        default => ucwords(str_replace('_', ' ', $normalizedStatus)),
     };
 @endphp
 

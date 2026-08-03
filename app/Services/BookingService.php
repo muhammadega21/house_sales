@@ -5,17 +5,16 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\KategoriRumah;
-use App\Enums\StatusPenjualan;
 use App\Enums\StatusPembayaranFee;
+use App\Enums\StatusPenjualan;
 use App\Enums\StatusUnit;
 use App\Models\Booking;
-use App\Models\Konsumen;
 use App\Models\StatusHistory;
 use App\Models\UnitRumah;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class BookingService extends BaseService
@@ -27,7 +26,7 @@ class BookingService extends BaseService
 
             if ($unit->status_unit !== StatusUnit::Tersedia) {
                 throw ValidationException::withMessages([
-                    'id_unit' => 'Unit tidak tersedia untuk dibooking. Status unit: ' . $unit->status_unit->label(),
+                    'id_unit' => 'Unit tidak tersedia untuk dibooking. Status unit: '.$unit->status_unit->label(),
                 ]);
             }
 
@@ -38,7 +37,7 @@ class BookingService extends BaseService
 
             if ($data['booking_fee'] < $minFee) {
                 throw ValidationException::withMessages([
-                    'booking_fee' => "Booking fee minimum untuk kategori {$kategori->label()} adalah Rp " . number_format($minFee, 0, ',', '.'),
+                    'booking_fee' => "Booking fee minimum untuk kategori {$kategori->label()} adalah Rp ".number_format($minFee, 0, ',', '.'),
                 ]);
             }
 
@@ -57,17 +56,7 @@ class BookingService extends BaseService
                 'catatan' => $data['catatan'] ?? null,
             ], Booking::class);
 
-            $unit->update(['status_unit' => StatusUnit::Dibooking->value]);
-
-            $konsumen = Konsumen::find($data['id_konsumen']);
-
-            StatusHistory::create([
-                'id_booking' => $booking->id,
-                'status_sebelum' => null,
-                'status_sesudah' => StatusPenjualan::Booking->value,
-                'catatan' => 'Booking baru dibuat',
-                'diubah_oleh' => Auth::id(),
-            ]);
+            // BookingObserver::created handles: unit → dibooking, StatusPenjualan, StatusHistory
 
             if (isset($data['bukti_bayar_fee']) && $data['bukti_bayar_fee']) {
                 $path = $this->uploadFile($data['bukti_bayar_fee'], 'bukti-bayar', null);
@@ -100,7 +89,7 @@ class BookingService extends BaseService
             $newNumber = 1;
         }
 
-        return $prefix . str_pad((string) $newNumber, 3, '0', STR_PAD_LEFT);
+        return $prefix.str_pad((string) $newNumber, 3, '0', STR_PAD_LEFT);
     }
 
     public function update(array $data, Model|string|int $model, string|int|null $id = null): Booking
@@ -112,7 +101,7 @@ class BookingService extends BaseService
         $statusPenjualan = $booking->statusHistory()
             ->where('status_sesudah', '!=', StatusPenjualan::Batal->value)
             ->where('status_sesudah', '!=', StatusPenjualan::Prospek->value)
-            ->orderByDesc('created_at')
+            ->orderByDesc('id')
             ->first();
 
         $currentStatus = $statusPenjualan?->status_sesudah ?? StatusPenjualan::Booking->value;
@@ -136,51 +125,49 @@ class BookingService extends BaseService
         return $booking->fresh();
     }
 
-    public function cancel(int $id, string $alasan): Booking
+    public function cancel(int $idBooking, string $alasan, int $userId): void
     {
-        return DB::transaction(function () use ($id, $alasan): Booking {
-            $booking = $this->findById(Booking::class, $id, ['konsumen', 'unit', 'statusHistory']);
+        DB::transaction(function () use ($idBooking, $alasan, $userId): void {
+            $booking = Booking::findOrFail($idBooking);
 
-            $statusPenjualan = $booking->statusHistory()
-                ->where('status_sesudah', '!=', StatusPenjualan::Batal->value)
-                ->where('status_sesudah', '!=', StatusPenjualan::Prospek->value)
-                ->orderByDesc('created_at')
-                ->first();
+            $statusPenjualan = \App\Models\StatusPenjualan::where('id_booking', $idBooking)->first();
 
-            $currentStatus = $statusPenjualan?->status_sesudah ?? StatusPenjualan::Booking->value;
-
-            if ($currentStatus !== StatusPenjualan::Booking->value) {
+            if (! $statusPenjualan) {
                 throw ValidationException::withMessages([
-                    'status' => 'Booking hanya bisa dibatalkan jika status penjualan masih \'booking\'.',
+                    'status' => 'Status penjualan tidak ditemukan untuk booking ini.',
                 ]);
             }
 
-            $unit = $booking->unit;
-            $wasPaid = $booking->status_pembayaran_fee === StatusPembayaranFee::SudahBayar->value;
+            $currentStatus = $statusPenjualan->status_saat_ini instanceof StatusPenjualan
+                ? $statusPenjualan->status_saat_ini
+                : StatusPenjualan::tryFrom((string) $statusPenjualan->status_saat_ini) ?? StatusPenjualan::Booking;
 
-            StatusHistory::create([
-                'id_booking' => $booking->id,
-                'status_sebelum' => StatusPenjualan::Booking->value,
-                'status_sesudah' => StatusPenjualan::Batal->value,
-                'catatan' => $alasan,
-                'diubah_oleh' => Auth::id(),
-            ]);
+            if ($currentStatus === StatusPenjualan::SerahTerima) {
+                throw ValidationException::withMessages([
+                    'status' => 'Booking tidak bisa dibatalkan setelah serah terima.',
+                ]);
+            }
 
-            $booking->update([
-                'status_pembayaran_fee' => $wasPaid ? StatusPembayaranFee::Refund->value : StatusPembayaranFee::BelumBayar->value,
-            ]);
+            app(StatusPenjualanService::class)->transition(
+                $statusPenjualan,
+                StatusPenjualan::Batal->value,
+                $alasan,
+                $userId,
+            );
 
-            $unit->update(['status_unit' => StatusUnit::Tersedia->value]);
-
-            return $booking->fresh();
+            if ($booking->status_pembayaran_fee === StatusPembayaranFee::SudahBayar) {
+                $booking->update([
+                    'status_pembayaran_fee' => StatusPembayaranFee::Refund->value,
+                ]);
+            }
         });
     }
 
-    public function getForMarketing(int $idMarketing): \Illuminate\Database\Eloquent\Collection
+    public function getForMarketing(int $idMarketing): Collection
     {
         return Booking::query()
             ->where('id_marketing', $idMarketing)
-            ->with(['konsumen', 'unit', 'pembayaran', 'statusHistory'])
+            ->with(['konsumen', 'unit', 'pembayaran', 'statusHistory', 'statusPenjualan'])
             ->orderByDesc('created_at')
             ->get();
     }
@@ -188,7 +175,14 @@ class BookingService extends BaseService
     public function getWithRelations(int $id): ?Booking
     {
         return Booking::query()
-            ->with(['konsumen', 'unit.perumahan', 'marketing', 'pembayaran', 'statusHistory'])
+            ->with([
+                'konsumen',
+                'unit.perumahan',
+                'marketing',
+                'pembayaran' => fn ($q) => $q->orderBy('tanggal_bayar', 'desc'),
+                'statusPenjualan',
+                'statusHistory' => fn ($q) => $q->orderBy('created_at', 'asc'),
+            ])
             ->find($id);
     }
 

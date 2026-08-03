@@ -101,7 +101,7 @@ class KonsumenService extends BaseService
     public function getDetail(int $id): ?Konsumen
     {
         return Konsumen::query()
-            ->with(['prospek', 'bookings', 'dokumenKpr', 'pengajuanKpr', 'marketing'])
+            ->with(['prospek', 'bookings', 'bookings.statusHistory', 'bookings.statusPenjualan', 'dokumenKpr', 'pengajuanKpr', 'marketing'])
             ->find($id);
     }
 

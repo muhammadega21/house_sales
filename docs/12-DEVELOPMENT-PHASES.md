@@ -78,10 +78,10 @@
 
 - [✅] CRUD Booking (Marketing + Admin)
 - [✅] Generate Kode Booking Otomatis
-- [ ] Input Pembayaran (Marketing)
-- [ ] Verifikasi Pembayaran (Admin)
-- [ ] Status Unit Otomatis & Side Effects
-- [ ] Detail Booking & Riwayat Pembayaran
+- [✅] Input Pembayaran (Marketing)
+- [✅] Verifikasi Pembayaran (Admin)
+- [✅] Status Unit Otomatis & Side Effects
+- [✅] Detail Booking & Riwayat Pembayaran
 
 ### Deliverables:
 
@@ -95,12 +95,12 @@
 
 ### Tasks:
 
-- [ ] Upload dokumen KPR (multi-file)
-- [ ] Checklist kelengkapan dokumen
+- [✅] Upload Dokumen KPR (Marketing)
+- [ ] Checklist Kelengkapan Dokumen
 - [ ] Verifikasi dokumen (Admin)
-- [ ] Form pengajuan KPR
-- [ ] Validasi: dokumen harus valid sebelum ajukan
-- [ ] Status pengajuan (draft→diajukan→disetujui/ditolak→akad)
+- [ ] Form Pengajuan KPR (Marketing)
+- [ ] Status Pengajuan KPR & Side Effects
+- [ ] Detail Pengajuan KPR
 
 ### Deliverables:
 

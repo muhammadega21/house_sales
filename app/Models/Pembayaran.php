@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\JenisPembayaran;
+use App\Enums\StatusVerifikasi;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -23,6 +25,7 @@ class Pembayaran extends Model
         'status_verifikasi',
         'diverifikasi_oleh',
         'tanggal_verifikasi',
+        'catatan_verifikasi',
     ];
 
     protected function casts(): array
@@ -31,6 +34,8 @@ class Pembayaran extends Model
             'tanggal_bayar' => 'date',
             'tanggal_verifikasi' => 'date',
             'nominal' => 'decimal:2',
+            'jenis_pembayaran' => JenisPembayaran::class,
+            'status_verifikasi' => StatusVerifikasi::class,
         ];
     }
 
@@ -42,5 +47,10 @@ class Pembayaran extends Model
     public function konsumen(): BelongsTo
     {
         return $this->belongsTo(Konsumen::class, 'id_konsumen');
+    }
+
+    public function diverifikasiOleh(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'diverifikasi_oleh');
     }
 }
