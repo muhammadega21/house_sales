@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\DokumenKpr;
 use App\Models\Konsumen;
+use App\Models\User;
 use App\Services\DokumenService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,11 +21,15 @@ final class DokumenController extends Controller
     {
         $search = $request->input('search', '');
         $filterStatus = $request->input('status_verifikasi', '');
+        $filterJenis = $request->input('jenis_dokumen', '');
+        $filterMarketing = $request->input('id_marketing', '');
+        $filterTanggalFrom = $request->input('tanggal_from', '');
+        $filterTanggalTo = $request->input('tanggal_to', '');
         $perPage = (int) $request->input('per_page', 10);
 
         $query = DokumenKpr::query()
             ->with(['konsumen', 'konsumen.marketing'])
-            ->orderByDesc('created_at');
+            ->orderByDesc('tanggal_upload');
 
         if ($search !== '') {
             $term = '%'.$search.'%';
@@ -40,9 +45,43 @@ final class DokumenController extends Controller
             $query->where('status_verifikasi', $filterStatus);
         }
 
+        if ($filterJenis !== '') {
+            $query->where('jenis_dokumen', $filterJenis);
+        }
+
+        if ($filterMarketing !== '') {
+            $query->whereHas('konsumen', function ($q) use ($filterMarketing) {
+                $q->where('id_marketing', $filterMarketing);
+            });
+        }
+
+        if ($filterTanggalFrom !== '' && $filterTanggalTo !== '') {
+            $query->whereBetween('tanggal_upload', [$filterTanggalFrom, $filterTanggalTo]);
+        } elseif ($filterTanggalFrom !== '') {
+            $query->where('tanggal_upload', '>=', $filterTanggalFrom);
+        } elseif ($filterTanggalTo !== '') {
+            $query->where('tanggal_upload', '<=', $filterTanggalTo);
+        }
+
         $documents = $query->paginate($perPage)->withQueryString();
 
-        return view('admin.dokumen.index', compact('documents', 'search', 'filterStatus', 'perPage'));
+        $stats = $this->dokumenService->getStatsForAdmin();
+
+        $marketingOptions = User::marketing()->aktif()->orderBy('nama_lengkap')->get()
+            ->mapWithKeys(fn ($m) => [$m->id => $m->nama_lengkap]);
+
+        return view('admin.dokumen.index', compact(
+            'documents',
+            'stats',
+            'search',
+            'filterStatus',
+            'filterJenis',
+            'filterMarketing',
+            'filterTanggalFrom',
+            'filterTanggalTo',
+            'perPage',
+            'marketingOptions'
+        ));
     }
 
     public function verifikasi(int $id): View
@@ -50,6 +89,14 @@ final class DokumenController extends Controller
         $document = DokumenKpr::with(['konsumen', 'konsumen.marketing'])->findOrFail($id);
 
         return view('admin.dokumen.verifikasi', compact('document'));
+    }
+
+    public function show(int $id): View
+    {
+        $document = DokumenKpr::with(['konsumen', 'konsumen.marketing', 'konsumen.dokumenKpr'])
+            ->findOrFail($id);
+
+        return view('admin.dokumen.show', compact('document'));
     }
 
     public function prosesVerifikasi(Request $request, int $id): RedirectResponse

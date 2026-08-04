@@ -50,6 +50,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     // Dokumen KPR Management & Verification
     Route::get('/dokumen', [Admin\DokumenController::class, 'index'])->name('dokumen.index');
+    Route::get('/dokumen/{id}', [Admin\DokumenController::class, 'show'])->name('dokumen.show');
     Route::get('/dokumen/{id}/verifikasi', [Admin\DokumenController::class, 'verifikasi'])->name('dokumen.verifikasi');
     Route::put('/dokumen/{id}/verifikasi', [Admin\DokumenController::class, 'prosesVerifikasi'])->name('dokumen.proses-verifikasi');
 
@@ -166,6 +167,11 @@ Route::middleware(['auth', 'role:marketing'])->prefix('marketing')->name('market
 
     // Pengajuan KPR
     Route::get('/pengajuan-kpr', [Marketing\PengajuanKprController::class, 'index'])->name('pengajuan-kpr.index');
+    Route::get('/pengajuan-kpr/create', [Marketing\PengajuanKprController::class, 'create'])->name('pengajuan-kpr.create');
+    Route::get('/pengajuan-kpr/info-booking/{idBooking}', [Marketing\PengajuanKprController::class, 'infoBooking'])->name('pengajuan-kpr.info-booking');
+    Route::get('/pengajuan-kpr/{id}/edit', [Marketing\PengajuanKprController::class, 'edit'])->name('pengajuan-kpr.edit');
+    Route::get('/pengajuan-kpr/{id}', [Marketing\PengajuanKprController::class, 'show'])->name('pengajuan-kpr.show');
+    Route::put('/pengajuan-kpr/{id}', [Marketing\PengajuanKprController::class, 'update'])->name('pengajuan-kpr.update');
     Route::post('/pengajuan-kpr', [Marketing\PengajuanKprController::class, 'store'])->name('pengajuan-kpr.store');
 
     // Simulasi

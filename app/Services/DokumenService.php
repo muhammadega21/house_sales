@@ -150,25 +150,56 @@ class DokumenService extends BaseService
 
     public function getChecklist(int $idKonsumen): array
     {
-        $documents = $this->getForKonsumen($idKonsumen)->keyBy('jenis_dokumen');
+        $dokumenWajib = [
+            'ktp' => 'KTP',
+            'kk' => 'Kartu Keluarga (KK)',
+            'npwp' => 'NPWP',
+            'slip_gaji' => 'Slip Gaji (3 bulan terakhir)',
+            'rekening_koran' => 'Rekening Koran (3 bulan)',
+            'surat_kerja' => 'Surat Keterangan Kerja',
+            'formulir_kpr' => 'Formulir Pengajuan KPR',
+        ];
+
+        $dokumenOpsional = [
+            'surat_nikah' => 'Surat Nikah / Akta Cerai',
+            'surat_keterangan_penghasilan' => 'Surat Keterangan Penghasilan',
+            'lainnya' => 'Dokumen Lainnya',
+        ];
+
+        $uploaded = DokumenKpr::where('id_konsumen', $idKonsumen)
+            ->whereIn('jenis_dokumen', array_merge(array_keys($dokumenWajib), array_keys($dokumenOpsional)))
+            ->get()
+            ->groupBy('jenis_dokumen');
+
         $checklist = [];
 
-        foreach (JenisDokumen::cases() as $jenis) {
-            if (!$jenis->wajib()) {
-                continue;
-            }
-
-            $document = $documents->get($jenis->value);
-            $status = $document?->status_verifikasi;
+        foreach ($dokumenWajib as $jenis => $label) {
+            $dok = $uploaded->get($jenis)?->first();
             $checklist[] = [
-                'jenis' => $jenis->value,
-                'label' => $jenis->label(),
+                'jenis' => $jenis,
+                'label' => $label,
                 'wajib' => true,
-                'uploaded' => (bool) $document,
-                'status_verifikasi' => $status,
-                'is_valid' => $status === StatusVerifikasiDokumen::Valid->value,
-                'needs_revision' => $status === StatusVerifikasiDokumen::PerluRevisi->value,
-                'document' => $document,
+                'uploaded' => $dok !== null,
+                'status' => $dok?->status_verifikasi ?? 'belum_upload',
+                'status_verifikasi' => $dok?->status_verifikasi ?? 'belum_diverifikasi',
+                'is_valid' => $dok !== null && $dok->status_verifikasi === StatusVerifikasiDokumen::Valid->value,
+                'id_dokumen' => $dok?->id,
+                'document' => $dok,
+            ];
+        }
+
+        foreach ($dokumenOpsional as $jenis => $label) {
+            $dok = $uploaded->get($jenis)?->first();
+            $checklist[] = [
+                'jenis' => $jenis,
+                'label' => $label,
+                'wajib' => false,
+                'uploaded' => $dok !== null,
+                'status' => $dok?->status_verifikasi ?? 'belum_upload',
+                'status_verifikasi' => $dok?->status_verifikasi ?? 'belum_diverifikasi',
+                'is_valid' => $dok !== null && $dok->status_verifikasi === StatusVerifikasiDokumen::Valid->value,
+                'id_dokumen' => $dok?->id,
+                'document' => $dok,
             ];
         }
 
@@ -177,25 +208,20 @@ class DokumenService extends BaseService
 
     public function isComplete(int $idKonsumen): bool
     {
-        foreach ($this->getChecklist($idKonsumen) as $item) {
-            if (!$item['is_valid']) {
-                return false;
-            }
-        }
-
-        return true;
+        return count($this->getMissingDocuments($idKonsumen)) === 0;
     }
 
     public function getMissingDocuments(int $idKonsumen): array
     {
-        $missing = [];
-        foreach ($this->getChecklist($idKonsumen) as $item) {
-            if (!$item['uploaded']) {
-                $missing[] = $item['jenis'];
-            }
-        }
+        $dokumenWajib = ['ktp', 'kk', 'npwp', 'slip_gaji', 'rekening_koran', 'surat_kerja', 'formulir_kpr'];
 
-        return $missing;
+        $validDocuments = DokumenKpr::where('id_konsumen', $idKonsumen)
+            ->whereIn('jenis_dokumen', $dokumenWajib)
+            ->where('status_verifikasi', StatusVerifikasiDokumen::Valid->value)
+            ->pluck('jenis_dokumen')
+            ->toArray();
+
+        return array_values(array_diff($dokumenWajib, $validDocuments));
     }
 
     private function storeFile(UploadedFile $file, int $konsumenId, string $jenis): string
@@ -233,5 +259,26 @@ class DokumenService extends BaseService
         }
 
         return $file->getMimeType() === 'application/pdf' ? 'pdf' : $extension;
+    }
+
+    public function getStatsForAdmin(): array
+    {
+        $bulanIni = now()->startOfMonth();
+
+        return [
+            'belum_diverifikasi' => DokumenKpr::query()
+                ->where('status_verifikasi', StatusVerifikasiDokumen::BelumDiverifikasi->value)
+                ->count(),
+            'valid_this_month' => DokumenKpr::query()
+                ->where('status_verifikasi', StatusVerifikasiDokumen::Valid->value)
+                ->where('tanggal_upload', '>=', $bulanIni)
+                ->count(),
+            'perlu_revisi' => DokumenKpr::query()
+                ->where('status_verifikasi', StatusVerifikasiDokumen::PerluRevisi->value)
+                ->count(),
+            'tidak_valid' => DokumenKpr::query()
+                ->where('status_verifikasi', StatusVerifikasiDokumen::TidakValid->value)
+                ->count(),
+        ];
     }
 }

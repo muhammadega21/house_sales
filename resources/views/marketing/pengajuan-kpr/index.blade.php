@@ -4,11 +4,15 @@
 
 @section('content')
     <div class="space-y-6">
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-gray-800">Pengajuan KPR</h1>
                 <p class="text-sm text-gray-500">Kelola pengajuan KPR Anda.</p>
             </div>
+            <a href="{{ route('marketing.pengajuan-kpr.create') }}"
+               class="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark">
+                Buat Pengajuan Baru
+            </a>
         </div>
 
         <!-- Filter Toolbar -->

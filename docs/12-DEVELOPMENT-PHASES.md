@@ -96,9 +96,9 @@
 ### Tasks:
 
 - [✅] Upload Dokumen KPR (Marketing)
-- [ ] Checklist Kelengkapan Dokumen
-- [ ] Verifikasi dokumen (Admin)
-- [ ] Form Pengajuan KPR (Marketing)
+- [✅] Checklist Kelengkapan Dokumen
+- [✅] Verifikasi dokumen (Admin)
+- [✅] Form Pengajuan KPR (Marketing)
 - [ ] Status Pengajuan KPR & Side Effects
 - [ ] Detail Pengajuan KPR
 
