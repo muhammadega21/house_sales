@@ -34,7 +34,7 @@ final class BookingController extends Controller
             ->with(['konsumen', 'unit', 'pembayaran', 'statusHistory']);
 
         if ($search !== '') {
-            $term = '%'.$search.'%';
+            $term = '%' . $search . '%';
             $query->where(function ($q) use ($term) {
                 $q->where('kode_booking', 'like', $term)
                     ->orWhereHas('konsumen', function ($q) use ($term) {
@@ -70,14 +70,14 @@ final class BookingController extends Controller
             ->where('id_marketing', auth()->id())
             ->orderBy('nama_lengkap')
             ->get()
-            ->mapWithKeys(fn ($k) => [$k->id => $k->nama_lengkap.' - '.$k->nik]);
+            ->mapWithKeys(fn($k) => [$k->id => $k->nama_lengkap . ' - ' . $k->nik]);
 
         $unitOptions = UnitRumah::query()
             ->where('status_unit', 'tersedia')
             ->with('perumahan')
             ->orderBy('kode_unit')
             ->get()
-            ->mapWithKeys(fn ($u) => [$u->id => $u->kode_unit.' - '.$u->tipe_rumah.' ('.$u->perumahan->nama_perumahan.')']);
+            ->mapWithKeys(fn($u) => [$u->id => $u->kode_unit . ' - ' . $u->tipe_rumah . ' (' . $u->perumahan->nama_perumahan . ')']);
 
         return view('marketing.booking.create', compact('konsumenOptions', 'unitOptions'));
     }
@@ -99,10 +99,10 @@ final class BookingController extends Controller
             'luas_tanah' => $unit->luas_tanah,
             'luas_bangunan' => $unit->luas_bangunan,
             'harga_jual' => $unit->harga_jual,
-            'harga_jual_format' => 'Rp '.number_format($unit->harga_jual, 0, ',', '.'),
+            'harga_jual_format' => 'Rp ' . number_format($unit->harga_jual, 0, ',', '.'),
             'booking_fee_min' => $unit->kategori === KategoriRumah::Subsidi ? 1000000 : 5000000,
             'perumahan' => $unit->perumahan->nama_perumahan,
-            'foto_unit' => $unit->foto_unit ? asset('storage/'.$unit->foto_unit) : null,
+            'foto_unit' => $unit->foto_unit ? asset('storage/' . $unit->foto_unit) : null,
         ]);
     }
 
@@ -116,7 +116,7 @@ final class BookingController extends Controller
             return redirect()->back()->withErrors($e->errors())->withInput();
         }
 
-        return redirect()->route('marketing.booking.show', $booking->id)->with('success', 'Booking berhasil dibuat dengan kode '.$booking->kode_booking);
+        return redirect()->route('marketing.booking.show', $booking->id)->with('success', 'Booking berhasil dibuat dengan kode ' . $booking->kode_booking);
     }
 
     public function show(int $id): View
@@ -138,6 +138,27 @@ final class BookingController extends Controller
         return view('marketing.booking.show', compact('booking', 'totalTerverifikasi', 'sisaTagihan'));
     }
 
+    public function tracking(int $id): View
+    {
+        $booking = $this->bookingService->getWithRelations($id);
+
+        if (! $booking) {
+            abort(404, 'Booking tidak ditemukan.');
+        }
+
+        $this->authorize('view', $booking);
+
+        $totalTerverifikasi = $booking->pembayaran
+            ->where('status_verifikasi', 'diverifikasi')
+            ->sum('nominal');
+
+        $sisaTagihan = $booking->unit->harga_jual - $totalTerverifikasi;
+
+        $backRoute = route('marketing.booking.show', $booking->id);
+
+        return view('booking.tracking', compact('booking', 'totalTerverifikasi', 'sisaTagihan', 'backRoute'));
+    }
+
     public function edit(int $id): View
     {
         $booking = $this->bookingService->getWithRelations($id);
@@ -152,14 +173,14 @@ final class BookingController extends Controller
             ->where('id_marketing', auth()->id())
             ->orderBy('nama_lengkap')
             ->get()
-            ->mapWithKeys(fn ($k) => [$k->id => $k->nama_lengkap.' - '.$k->nik]);
+            ->mapWithKeys(fn($k) => [$k->id => $k->nama_lengkap . ' - ' . $k->nik]);
 
         $unitOptions = UnitRumah::query()
             ->where('status_unit', 'tersedia')
             ->with('perumahan')
             ->orderBy('kode_unit')
             ->get()
-            ->mapWithKeys(fn ($u) => [$u->id => $u->kode_unit.' - '.$u->tipe_rumah.' ('.$u->perumahan->nama_perumahan.')']);
+            ->mapWithKeys(fn($u) => [$u->id => $u->kode_unit . ' - ' . $u->tipe_rumah . ' (' . $u->perumahan->nama_perumahan . ')']);
 
         return view('marketing.booking.edit', compact('booking', 'konsumenOptions', 'unitOptions'));
     }

@@ -167,7 +167,9 @@
                                 </td>
                                 <td class="px-4 py-4">
                                     @php
-                                        $status = $booking->statusHistory->sortByDesc('id')->first()?->status_sesudah ?? 'booking';
+                                        $status =
+                                            $booking->statusHistory->sortByDesc('id')->first()?->status_sesudah ??
+                                            'booking';
                                     @endphp
                                     <span
                                         class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-{{ \App\Enums\StatusPenjualan::tryFrom($status)?->color() ?? 'gray' }}-100 text-{{ \App\Enums\StatusPenjualan::tryFrom($status)?->color() ?? 'gray' }}-800">
@@ -186,7 +188,15 @@
                                                     d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                             </svg>
                                         </a>
-                                        @if($status === 'booking')
+                                        <a href="{{ route('admin.booking.tracking', $booking->id) }}"
+                                            class="text-amber-600 hover:text-amber-800" title="Tracking">
+                                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M3 7h18M3 12h18M3 17h18" />
+                                            </svg>
+                                        </a>
+                                        @if ($status === 'booking')
                                             <a href="{{ route('admin.booking.edit', $booking->id) }}"
                                                 class="text-primary hover:text-primary-dark" title="Edit">
                                                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24"

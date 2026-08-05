@@ -1,7 +1,14 @@
 <div class="flow-root">
     @php
         $sorted = $histories ? $histories->sortBy('created_at') : collect();
-        $latest = $currentStatus ?? ($sorted->last()?->status_sesudah ?? null);
+        $latest = $currentStatus;
+        if ($latest instanceof \BackedEnum) {
+            $latest = $latest->value;
+        }
+        if (!$latest && $sorted->isNotEmpty()) {
+            $latest = $sorted->last()->status_sesudah;
+        }
+        $latest = $latest ?? null;
     @endphp
 
     @forelse($sorted as $history)

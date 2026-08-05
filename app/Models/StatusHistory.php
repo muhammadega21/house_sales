@@ -36,4 +36,16 @@ class StatusHistory extends Model
     {
         return $this->belongsTo(User::class, 'diubah_oleh');
     }
+
+    public function getStatusSebelumLabel(): string
+    {
+        return $this->status_sebelum
+            ? \App\Enums\StatusPenjualan::from($this->status_sebelum)->label()
+            : 'Awal';
+    }
+
+    public function getStatusSesudahLabel(): string
+    {
+        return \App\Enums\StatusPenjualan::from($this->status_sesudah)->label();
+    }
 }

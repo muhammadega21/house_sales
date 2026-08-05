@@ -63,7 +63,10 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     // Status Penjualan
     Route::get('/status-penjualan', [Admin\StatusPenjualanController::class, 'index'])->name('status-penjualan.index');
+    Route::get('/status-penjualan/{id}', [Admin\StatusPenjualanController::class, 'show'])->name('status-penjualan.show');
     Route::put('/status-penjualan/{id}', [Admin\StatusPenjualanController::class, 'update'])->name('status-penjualan.update');
+
+    Route::get('/activity-log', [Admin\ActivityLogController::class, 'index'])->name('activity-log.index');
 
     // Marketing Management & Performance
     Route::resource('marketing', Admin\MarketingController::class);
@@ -87,6 +90,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/booking/create', [Admin\BookingController::class, 'create'])->name('booking.create');
     Route::post('/booking', [Admin\BookingController::class, 'store'])->name('booking.store');
     Route::get('/booking/{id}', [Admin\BookingController::class, 'show'])->name('booking.show');
+    Route::get('/booking/{id}/tracking', [Admin\BookingController::class, 'tracking'])->name('booking.tracking');
     Route::get('/booking/{id}/edit', [Admin\BookingController::class, 'edit'])->name('booking.edit');
     Route::put('/booking/{id}', [Admin\BookingController::class, 'update'])->name('booking.update');
     Route::get('/booking/{id}/cancel', [Admin\BookingController::class, 'cancel'])->name('booking.cancel');
@@ -144,6 +148,7 @@ Route::middleware(['auth', 'role:marketing'])->prefix('marketing')->name('market
     Route::get('/booking/create', [Marketing\BookingController::class, 'create'])->name('booking.create');
     Route::post('/booking', [Marketing\BookingController::class, 'store'])->name('booking.store');
     Route::get('/booking/{id}', [Marketing\BookingController::class, 'show'])->name('booking.show');
+    Route::get('/booking/{id}/tracking', [Marketing\BookingController::class, 'tracking'])->name('booking.tracking');
     Route::get('/booking/{id}/edit', [Marketing\BookingController::class, 'edit'])->name('booking.edit');
     Route::put('/booking/{id}', [Marketing\BookingController::class, 'update'])->name('booking.update');
     Route::get('/booking/{id}/cancel', [Marketing\BookingController::class, 'cancel'])->name('booking.cancel');
@@ -179,6 +184,9 @@ Route::middleware(['auth', 'role:marketing'])->prefix('marketing')->name('market
     // Simulasi
     Route::get('/simulasi', [Marketing\SimulasiController::class, 'index'])->name('simulasi.index');
     Route::post('/simulasi/hitung', [Marketing\SimulasiController::class, 'hitung'])->name('simulasi.hitung');
+    Route::post('/simulasi/simpan', [Marketing\SimulasiController::class, 'simpan'])->name('simulasi.simpan');
+    Route::get('/simulasi/perbandingan', [Marketing\SimulasiController::class, 'perbandingan'])->name('simulasi.perbandingan');
+    Route::get('/simulasi/export-pdf', [Marketing\SimulasiController::class, 'exportPdf'])->name('simulasi.export-pdf');
 
     // Kinerja
     Route::get('/kinerja', [Marketing\KinerjaController::class, 'index'])->name('kinerja.index');

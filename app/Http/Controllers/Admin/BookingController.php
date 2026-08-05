@@ -35,7 +35,7 @@ final class BookingController extends Controller
             ->with(['konsumen', 'unit.perumahan', 'marketing', 'pembayaran', 'statusHistory']);
 
         if ($search !== '') {
-            $term = '%'.$search.'%';
+            $term = '%' . $search . '%';
             $query->where(function ($q) use ($term) {
                 $q->where('kode_booking', 'like', $term)
                     ->orWhereHas('konsumen', function ($q) use ($term) {
@@ -80,13 +80,13 @@ final class BookingController extends Controller
         $bookings = $query->orderByDesc('created_at')->paginate($perPage)->withQueryString();
 
         $marketingOptions = User::marketing()->aktif()->orderBy('nama_lengkap')->get()
-            ->mapWithKeys(fn ($m) => [$m->id => $m->nama_lengkap]);
+            ->mapWithKeys(fn($m) => [$m->id => $m->nama_lengkap]);
 
         $perumahanOptions = Perumahan::query()
             ->where('status', 'aktif')
             ->orderBy('nama_perumahan')
             ->get()
-            ->mapWithKeys(fn ($p) => [$p->id => $p->nama_perumahan]);
+            ->mapWithKeys(fn($p) => [$p->id => $p->nama_perumahan]);
 
         $stats = $this->bookingService->getStats();
 
@@ -115,6 +115,27 @@ final class BookingController extends Controller
         return view('admin.booking.show', compact('booking', 'totalTerverifikasi', 'sisaTagihan'));
     }
 
+    public function tracking(int $id): View
+    {
+        $booking = $this->bookingService->getWithRelations($id);
+
+        if (! $booking) {
+            abort(404, 'Booking tidak ditemukan.');
+        }
+
+        $this->authorize('view', $booking);
+
+        $totalTerverifikasi = $booking->pembayaran
+            ->where('status_verifikasi', 'diverifikasi')
+            ->sum('nominal');
+
+        $sisaTagihan = $booking->unit->harga_jual - $totalTerverifikasi;
+
+        $backRoute = route('admin.booking.show', $booking->id);
+
+        return view('booking.tracking', compact('booking', 'totalTerverifikasi', 'sisaTagihan', 'backRoute'));
+    }
+
     public function edit(int $id): View
     {
         $booking = $this->bookingService->getWithRelations($id);
@@ -129,14 +150,14 @@ final class BookingController extends Controller
             ->with('marketing')
             ->orderBy('nama_lengkap')
             ->get()
-            ->mapWithKeys(fn ($k) => [$k->id => $k->nama_lengkap.' - '.$k->nik.' ('.($k->marketing?->nama_lengkap ?? '-').')']);
+            ->mapWithKeys(fn($k) => [$k->id => $k->nama_lengkap . ' - ' . $k->nik . ' (' . ($k->marketing?->nama_lengkap ?? '-') . ')']);
 
         $unitOptions = UnitRumah::query()
             ->where('status_unit', 'tersedia')
             ->with('perumahan')
             ->orderBy('kode_unit')
             ->get()
-            ->mapWithKeys(fn ($u) => [$u->id => $u->kode_unit.' - '.$u->tipe_rumah.' ('.$u->perumahan->nama_perumahan.')']);
+            ->mapWithKeys(fn($u) => [$u->id => $u->kode_unit . ' - ' . $u->tipe_rumah . ' (' . $u->perumahan->nama_perumahan . ')']);
 
         return view('admin.booking.edit', compact('booking', 'konsumenOptions', 'unitOptions'));
     }

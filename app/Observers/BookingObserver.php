@@ -35,5 +35,17 @@ class BookingObserver
             'catatan' => 'Booking dibuat',
             'diubah_oleh' => $booking->id_marketing,
         ]);
+
+        activity_log([
+            'id_user' => $booking->id_marketing,
+            'aksi' => 'create',
+            'entitas' => 'booking',
+            'entitas_id' => $booking->id,
+            'deskripsi' => 'Booking dibuat dan status penjualan diinisialisasi ke Booking.',
+            'data_baru' => [
+                'kode_booking' => $booking->kode_booking,
+                'status_saat_ini' => StatusPenjualanEnum::Booking->value,
+            ],
+        ]);
     }
 }
