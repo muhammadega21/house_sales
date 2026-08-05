@@ -19,6 +19,13 @@ final class PengajuanKprRequest extends FormRequest
 
     public function rules(): array
     {
+        if ($this->routeIs('admin.pengajuan-kpr.proses-update-status')) {
+            return [
+                'status_pengajuan' => ['required', 'string', 'in:draft,diajukan,verifikasi_bank,disetujui,ditolak,akad,batal'],
+                'catatan' => ['required', 'string', 'max:1000'],
+            ];
+        }
+
         $rules = [
             'nama_bank' => ['required', 'string', 'max:100'],
             'plafon_kpr' => ['required', 'numeric', 'min:0'],

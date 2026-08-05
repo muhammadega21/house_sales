@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PengajuanKpr extends Model
 {
@@ -48,5 +49,10 @@ class PengajuanKpr extends Model
     public function unit(): BelongsTo
     {
         return $this->belongsTo(UnitRumah::class, 'id_unit');
+    }
+
+    public function pengajuanKprHistory(): HasMany
+    {
+        return $this->hasMany(PengajuanKprHistory::class, 'id_pengajuan');
     }
 }

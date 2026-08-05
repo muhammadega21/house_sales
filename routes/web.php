@@ -56,8 +56,10 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     // Pengajuan KPR Management
     Route::get('/pengajuan-kpr', [Admin\PengajuanKprController::class, 'index'])->name('pengajuan-kpr.index');
+    Route::get('/pengajuan-kpr/stats', [Admin\PengajuanKprController::class, 'stats'])->name('pengajuan-kpr.stats');
     Route::get('/pengajuan-kpr/{id}', [Admin\PengajuanKprController::class, 'show'])->name('pengajuan-kpr.show');
-    Route::put('/pengajuan-kpr/{id}/status', [Admin\PengajuanKprController::class, 'updateStatus'])->name('pengajuan-kpr.update-status');
+    Route::get('/pengajuan-kpr/{id}/update-status', [Admin\PengajuanKprController::class, 'updateStatus'])->name('pengajuan-kpr.update-status');
+    Route::put('/pengajuan-kpr/{id}/status', [Admin\PengajuanKprController::class, 'prosesUpdateStatus'])->name('pengajuan-kpr.proses-update-status');
 
     // Status Penjualan
     Route::get('/status-penjualan', [Admin\StatusPenjualanController::class, 'index'])->name('status-penjualan.index');

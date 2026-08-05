@@ -4,10 +4,11 @@
 
 @section('content')
     <div class="space-y-6">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h1 class="text-2xl font-bold text-gray-800">Detail Pengajuan KPR</h1>
                 <p class="text-sm text-gray-500">Kode #{{ str_pad($pengajuan->id, 6, '0', STR_PAD_LEFT) }}</p>
+                <p class="text-sm text-gray-500 mt-1">Konsumen: {{ $pengajuan->konsumen?->nama_lengkap ?? '-' }}</p>
             </div>
             <a href="{{ route('admin.pengajuan-kpr.index') }}"
                 class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50">
@@ -19,18 +20,35 @@
         </div>
 
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <!-- Pengajuan Info -->
             <div class="lg:col-span-2 space-y-6">
                 <x-card>
-                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Informasi Pengajuan</h2>
-                    <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div class="md:flex md:items-center md:justify-between md:gap-6">
+                        <div>
+                            <h2 class="text-lg font-semibold text-gray-800">Ringkasan Pengajuan</h2>
+                            <p class="mt-1 text-sm text-gray-500">Informasi pengajuan, status, dan aktivitas KPR.</p>
+                        </div>
+                        <div class="grid gap-3 sm:grid-cols-2">
+                            <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4 text-sm">
+                                <p class="text-xs text-gray-500">Status saat ini</p>
+                                <div class="mt-2"><x-badge :status="$pengajuan->status_pengajuan" /></div>
+                            </div>
+                            <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4 text-sm">
+                                <p class="text-xs text-gray-500">Tanggal pengajuan</p>
+                                <p class="mt-2 font-semibold text-gray-900">
+                                    {{ $pengajuan->tanggal_pengajuan?->format('d M Y') ?? '-' }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 grid gap-4 md:grid-cols-3 text-sm">
                         <div>
                             <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Nama Bank</p>
                             <p class="mt-1 text-gray-900">{{ $pengajuan->nama_bank ?? '-' }}</p>
                         </div>
                         <div>
                             <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Plafon KPR</p>
-                            <p class="mt-1 text-gray-900">Rp {{ number_format($pengajuan->plafon_kpr ?? 0, 0, ',', '.') }}</p>
+                            <p class="mt-1 text-gray-900">Rp {{ number_format($pengajuan->plafon_kpr ?? 0, 0, ',', '.') }}
+                            </p>
                         </div>
                         <div>
                             <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Tenor</p>
@@ -40,150 +58,169 @@
                             <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Suku Bunga</p>
                             <p class="mt-1 text-gray-900">{{ $pengajuan->suku_bunga ?? '-' }}%</p>
                         </div>
-                        <div>
-                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Tanggal Pengajuan</p>
-                            <p class="mt-1 text-gray-900">{{ $pengajuan->tanggal_pengajuan?->format('d/m/Y') ?? '-' }}</p>
-                        </div>
-                        <div>
-                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Tanggal Keputusan</p>
-                            <p class="mt-1 text-gray-900">{{ $pengajuan->tanggal_keputusan?->format('d/m/Y') ?? '-' }}</p>
-                        </div>
-                        <div>
-                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Status</p>
-                            <p class="mt-1"><x-badge :status="$pengajuan->status_pengajuan" /></p>
-                        </div>
-                        <div>
-                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Dibuat</p>
-                            <p class="mt-1 text-gray-900">{{ $pengajuan->created_at->format('d/m/Y H:i') }}</p>
+                        <div class="col-span-2">
+                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Catatan</p>
+                            <p class="mt-1 text-sm text-gray-700">{{ $pengajuan->catatan ?? 'Tidak ada catatan.' }}</p>
                         </div>
                     </div>
-                    @if ($pengajuan->catatan)
-                        <div class="mt-4 pt-4 border-t border-gray-200">
-                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Catatan</p>
-                            <p class="mt-1 text-sm text-gray-700">{{ $pengajuan->catatan }}</p>
-                        </div>
-                    @endif
+
+                    <div class="mt-6">
+                        <x-kpr-progress :status="$pengajuan->status_pengajuan" />
+                    </div>
                 </x-card>
 
-                <!-- Status History -->
-                <x-card>
-                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Riwayat Status Penjualan</h2>
-                    @if ($pengajuan->booking?->statusHistory->isNotEmpty())
+                <div class="grid gap-6 lg:grid-cols-2">
+                    <x-card title="Informasi Konsumen">
+                        <div class="space-y-4 text-sm">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Nama</p>
+                                <p class="mt-1 text-gray-900">{{ $pengajuan->konsumen?->nama_lengkap ?? '-' }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">NIK</p>
+                                <p class="mt-1 text-gray-900">{{ $pengajuan->konsumen?->nik ?? '-' }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">No HP</p>
+                                <p class="mt-1 text-gray-900">{{ $pengajuan->konsumen?->no_hp ?? '-' }}</p>
+                            </div>
+                        </div>
+                    </x-card>
+
+                    <x-card title="Informasi Unit">
+                        <div class="space-y-4 text-sm">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Kode Unit</p>
+                                <p class="mt-1 text-gray-900">{{ $pengajuan->unit?->kode_unit ?? '-' }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Tipe</p>
+                                <p class="mt-1 text-gray-900">{{ $pengajuan->unit?->tipe_rumah ?? '-' }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Perumahan</p>
+                                <p class="mt-1 text-gray-900">{{ $pengajuan->unit?->perumahan?->nama_perumahan ?? '-' }}
+                                </p>
+                            </div>
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Harga Jual</p>
+                                <p class="mt-1 text-gray-900">Rp
+                                    {{ number_format($pengajuan->unit?->harga_jual ?? 0, 0, ',', '.') }}</p>
+                            </div>
+                        </div>
+                    </x-card>
+                </div>
+
+                <x-card title="Estimasi Cicilan">
+                    <x-estimasi-cicilan :plafon="$pengajuan->plafon_kpr" :tenor="$pengajuan->tenor_tahun" :bunga="$pengajuan->suku_bunga" />
+                </x-card>
+
+                <x-card title="Checklist Dokumen">
+                    <div class="space-y-3">
+                        @foreach ($dokumenChecklist as $item)
+                            @php
+                                $statusLabel = match ($item['status_verifikasi']) {
+                                    'valid' => 'Valid',
+                                    'perlu_revisi' => 'Perlu Revisi',
+                                    'belum_diverifikasi' => $item['uploaded'] ? 'Belum Diverifikasi' : 'Belum Upload',
+                                    default => ucfirst(str_replace('_', ' ', $item['status_verifikasi'])),
+                                };
+                                $badgeColor = $item['is_valid'] ? 'emerald' : ($item['uploaded'] ? 'amber' : 'gray');
+                            @endphp
+                            <div
+                                class="flex items-center justify-between gap-4 rounded-2xl border border-gray-200 bg-white p-4">
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-900">{{ $item['label'] }}</p>
+                                    <p class="text-xs text-gray-500">{{ $item['wajib'] ? 'Wajib' : 'Opsional' }}</p>
+                                </div>
+                                <div
+                                    class="inline-flex items-center gap-2 rounded-full bg-{{ $badgeColor }}-50 px-3 py-1 text-xs font-semibold text-{{ $badgeColor }}-700">
+                                    {{ $statusLabel }}
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                    <div class="mt-4 text-sm text-gray-500">
+                        <p>Dokumen lengkap jika semua dokumen wajib sudah diupload dan diverifikasi.</p>
+                        <a href="{{ route('admin.dokumen.index', ['id_konsumen' => $pengajuan->id_konsumen]) }}"
+                            class="text-primary hover:text-primary-dark">Kelola dokumen KPR</a>
+                    </div>
+                </x-card>
+
+                <x-card title="Timeline Status">
+                    <x-status-timeline :histories="$statusHistory" :current-status="$pengajuan->status_pengajuan" />
+                </x-card>
+
+                <x-card title="Aplikasi Lain Konsumen">
+                    @if ($otherPengajuans->isEmpty())
+                        <p class="text-sm text-gray-400">Tidak ada aplikasi KPR lain untuk konsumen ini.</p>
+                    @else
                         <div class="space-y-3">
-                            @foreach ($pengajuan->booking->statusHistory->sortByDesc('id') as $history)
-                                <div class="flex items-start gap-3 text-sm">
-                                    <div class="mt-1 h-2 w-2 rounded-full bg-gray-400"></div>
-                                    <div>
-                                        <span class="font-medium text-gray-900">
-                                            {{ \App\Enums\StatusPenjualan::tryFrom($history->status_sebelum)?->label() ?? $history->status_sebelum }}
-                                        </span>
-                                        <span class="text-gray-400 mx-2">→</span>
-                                        <span class="font-medium text-gray-900">
-                                            {{ \App\Enums\StatusPenjualan::tryFrom($history->status_sesudah)?->label() ?? $history->status_sesudah }}
-                                        </span>
-                                        <span class="ml-2 text-xs text-gray-400">
-                                            {{ $history->created_at->format('d/m/Y H:i') }}
-                                        </span>
-                                        @if ($history->catatan)
-                                            <p class="text-xs text-gray-500 mt-0.5">{{ $history->catatan }}</p>
-                                        @endif
-                                    </div>
+                            @foreach ($otherPengajuans as $other)
+                                <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4 text-sm">
+                                    <p class="font-semibold text-gray-900">{{ $other->nama_bank ?? '-' }}</p>
+                                    <p class="text-gray-600">Status: <x-badge :status="$other->status_pengajuan" /></p>
+                                    <p class="text-gray-500">Diajukan: {{ $other->created_at->format('d M Y') }}</p>
+                                    <a href="{{ route('admin.pengajuan-kpr.show', $other->id) }}"
+                                        class="text-primary hover:text-primary-dark text-xs font-medium">Lihat detail</a>
                                 </div>
                             @endforeach
                         </div>
-                    @else
-                        <p class="text-sm text-gray-400">Belum ada riwayat status.</p>
                     @endif
                 </x-card>
             </div>
 
-            <!-- Sidebar -->
             <div class="space-y-6">
-                <!-- Konsumen Info -->
-                <x-card>
-                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Informasi Konsumen</h2>
-                    <div class="space-y-3 text-sm">
+                <x-card title="Informasi Booking">
+                    <div class="space-y-3 text-sm text-gray-700">
                         <div>
-                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Nama</p>
-                            <p class="mt-1 text-gray-900">{{ $pengajuan->konsumen?->nama_lengkap ?? '-' }}</p>
+                            <p class="text-xs uppercase tracking-wider text-gray-500">Kode Booking</p>
+                            <p class="font-semibold text-gray-900">{{ $pengajuan->booking->kode_booking }}</p>
                         </div>
                         <div>
-                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">NIK</p>
-                            <p class="mt-1 font-mono text-gray-700">{{ $pengajuan->konsumen?->nik ?? '-' }}</p>
+                            <p class="text-xs uppercase tracking-wider text-gray-500">Marketing PIC</p>
+                            <p class="font-semibold text-gray-900">
+                                {{ $pengajuan->booking->marketing?->nama_lengkap ?? '-' }}</p>
                         </div>
                         <div>
-                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">No HP</p>
-                            <p class="mt-1 text-gray-900">{{ $pengajuan->konsumen?->no_hp ?? '-' }}</p>
-                        </div>
-                        <div>
-                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Email</p>
-                            <p class="mt-1 text-gray-900">{{ $pengajuan->konsumen?->email ?? '-' }}</p>
+                            <p class="text-xs uppercase tracking-wider text-gray-500">Tanggal Booking</p>
+                            <p class="text-gray-900">{{ $pengajuan->booking->tanggal_booking?->format('d M Y') ?? '-' }}
+                            </p>
                         </div>
                     </div>
                 </x-card>
 
-                <!-- Unit Info -->
-                <x-card>
-                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Informasi Unit</h2>
+                <x-card title="Aksi">
                     <div class="space-y-3 text-sm">
-                        <div>
-                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Kode Unit</p>
-                            <p class="mt-1 text-gray-900">{{ $pengajuan->unit?->kode_unit ?? '-' }}</p>
-                        </div>
-                        <div>
-                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Tipe</p>
-                            <p class="mt-1 text-gray-900">{{ $pengajuan->unit?->tipe_rumah ?? '-' }}</p>
-                        </div>
-                        <div>
-                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Perumahan</p>
-                            <p class="mt-1 text-gray-900">{{ $pengajuan->unit?->perumahan?->nama_perumahan ?? '-' }}</p>
-                        </div>
-                        <div>
-                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Harga Jual</p>
-                            <p class="mt-1 text-gray-900">Rp {{ number_format($pengajuan->unit?->harga_jual ?? 0, 0, ',', '.') }}</p>
-                        </div>
+                        @if (!empty($allowedStatus))
+                            <a href="{{ route('admin.pengajuan-kpr.update-status', $pengajuan->id) }}"
+                                class="block rounded-lg bg-primary px-4 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark">
+                                Ubah Status Pengajuan
+                            </a>
+                        @else
+                            <div
+                                class="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-center text-sm text-gray-600">
+                                Status ini sudah final dan tidak dapat diubah.
+                            </div>
+                        @endif
+                        <a href="{{ route('admin.booking.show', $pengajuan->booking->id) }}"
+                            class="block rounded-lg border border-gray-200 bg-white px-4 py-3 text-center text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50">
+                            Lihat Booking
+                        </a>
                     </div>
                 </x-card>
 
-                <!-- Update Status -->
-                <x-card>
-                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Ubah Status</h2>
-                    <form method="POST" action="{{ route('admin.pengajuan-kpr.update-status', $pengajuan->id) }}">
-                        @csrf
-                        @method('PUT')
-                        <div class="space-y-4">
-                            <div>
-                                <label for="status_pengajuan" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                                <select name="status_pengajuan" id="status_pengajuan"
-                                    class="block w-full rounded-lg border border-gray-300 py-2.5 text-sm transition focus:border-primary focus:ring-primary">
-                                    <option value="">Pilih status</option>
-                                    <option value="draft" {{ $pengajuan->status_pengajuan === 'draft' ? 'selected' : '' }}>Draft</option>
-                                    <option value="diajukan" {{ $pengajuan->status_pengajuan === 'diajukan' ? 'selected' : '' }}>Diajukan</option>
-                                    <option value="verifikasi_bank" {{ $pengajuan->status_pengajuan === 'verifikasi_bank' ? 'selected' : '' }}>Verifikasi Bank</option>
-                                    <option value="disetujui" {{ $pengajuan->status_pengajuan === 'disetujui' ? 'selected' : '' }}>Disetujui</option>
-                                    <option value="ditolak" {{ $pengajuan->status_pengajuan === 'ditolak' ? 'selected' : '' }}>Ditolak</option>
-                                    <option value="akad" {{ $pengajuan->status_pengajuan === 'akad' ? 'selected' : '' }}>Akad</option>
-                                    <option value="batal" {{ $pengajuan->status_pengajuan === 'batal' ? 'selected' : '' }}>Batal</option>
-                                </select>
-                                @error('status_pengajuan')
-                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-                            <div>
-                                <label for="catatan" class="block text-sm font-medium text-gray-700 mb-1">Catatan</label>
-                                <textarea name="catatan" id="catatan" rows="3"
-                                    class="block w-full rounded-lg border border-gray-300 py-2.5 text-sm transition focus:border-primary focus:ring-primary"
-                                    placeholder="Tambahkan catatan...">{{ old('catatan') }}</textarea>
-                                @error('catatan')
-                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-                            <button type="submit"
-                                class="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark">
-                                Perbarui Status
-                            </button>
+                <x-card title="Rekap Konsumen">
+                    <div class="space-y-3 text-sm text-gray-700">
+                        <div>
+                            <p class="text-xs uppercase tracking-wider text-gray-500">Jumlah aplikasi KPR</p>
+                            <p class="font-semibold text-gray-900">{{ $otherPengajuans->count() + 1 }}</p>
                         </div>
-                    </form>
+                        <div>
+                            <p class="text-xs uppercase tracking-wider text-gray-500">Pengajuan ditolak</p>
+                            <p class="font-semibold text-gray-900">{{ $rejectionCount }}</p>
+                        </div>
+                    </div>
                 </x-card>
             </div>
         </div>

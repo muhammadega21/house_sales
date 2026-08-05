@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\PengajuanKprRequest;
 use App\Models\Booking;
 use App\Models\PengajuanKpr;
+use App\Models\StatusHistory;
 use App\Services\DokumenService;
 use App\Services\PengajuanKprService;
 use Illuminate\Http\JsonResponse;
@@ -59,7 +60,7 @@ final class PengajuanKprController extends Controller
         $validated['status_pengajuan'] = 'draft';
 
         try {
-            $this->pengajuanKprService->createForBooking($validated, $validated['id_booking']);
+            $this->pengajuanKprService->createForBooking($validated, (int) $validated['id_booking']);
         } catch (\InvalidArgumentException $e) {
             return redirect()->back()->withErrors(['error' => $e->getMessage()])->withInput();
         }
@@ -90,13 +91,27 @@ final class PengajuanKprController extends Controller
 
     public function show(int $id): View
     {
-        $pengajuan = PengajuanKpr::with(['konsumen', 'booking.unit', 'booking.konsumen'])->findOrFail($id);
+        $pengajuan = PengajuanKpr::with([
+            'konsumen',
+            'booking.unit.perumahan',
+            'booking.marketing',
+            'booking.pembayaran' => fn ($q) => $q->where('status_verifikasi', 'diverifikasi'),
+        ])->findOrFail($id);
 
         if ($pengajuan->booking->id_marketing !== Auth::id()) {
             abort(403, 'Anda tidak memiliki akses untuk melihat pengajuan KPR ini.');
         }
 
-        return view('marketing.pengajuan-kpr.show', compact('pengajuan'));
+        $dokumenChecklist = $this->dokumenService->getChecklist($pengajuan->id_konsumen);
+        $statusHistory = StatusHistory::where('id_booking', $pengajuan->id_booking)
+            ->orderBy('created_at', 'asc')
+            ->get();
+        $otherPengajuans = PengajuanKpr::where('id_konsumen', $pengajuan->id_konsumen)
+            ->where('id', '!=', $pengajuan->id)
+            ->orderByDesc('created_at')
+            ->get();
+
+        return view('marketing.pengajuan-kpr.show', compact('pengajuan', 'dokumenChecklist', 'statusHistory', 'otherPengajuans'));
     }
 
     public function edit(int $id): View

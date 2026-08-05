@@ -99,8 +99,8 @@
 - [✅] Checklist Kelengkapan Dokumen
 - [✅] Verifikasi dokumen (Admin)
 - [✅] Form Pengajuan KPR (Marketing)
-- [ ] Status Pengajuan KPR & Side Effects
-- [ ] Detail Pengajuan KPR
+- [✅] Status Pengajuan KPR & Side Effects
+- [✅] Detail Pengajuan KPR
 
 ### Deliverables:
 
@@ -114,14 +114,12 @@
 
 ### Tasks:
 
-- [ ] Implementasi State Machine status penjualan
-- [ ] Halaman tracking status per booking
-- [ ] Riwayat perubahan status (history log)
-- [ ] Side effects (ubah status unit, hitung komisi)
-- [ ] Simulasi pembayaran (KPR, Cash Bertahap, Cash Keras)
-- [ ] Kalkulator dengan rumus anuitas/flat
-- [ ] Perbandingan 3 metode side-by-side
-- [ ] Cetak/export hasil simulasi (PDF)
+- [ ] State Machine Status Penjualan (Implementasi Lengkap)
+- [ ] Halaman Tracking Status per Booking
+- [ ] Riwayat Perubahan Status (History Log)
+- [ ] Simulasi Pembayaran (Service & Kalkulator)
+- [ ] UI Simulasi Pembayaran (Form & Hasil)
+- [ ] Perbandingan 3 Metode & Export PDF
 
 ### Deliverables:
 

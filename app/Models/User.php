@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\Role;
+use App\Models\MarketingNotification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -62,6 +63,11 @@ class User extends Authenticatable
         return $this->hasMany(MarketingTarget::class, 'id_marketing');
     }
 
+    public function marketingNotifications(): HasMany
+    {
+        return $this->hasMany(MarketingNotification::class, 'id_marketing');
+    }
+
     public function scopeAktif($query)
     {
         return $query->where('status', 'aktif');
@@ -82,4 +88,3 @@ class User extends Authenticatable
         return $query->where('role', Role::Manajemen);
     }
 }
-
