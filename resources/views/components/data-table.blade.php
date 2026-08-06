@@ -92,6 +92,9 @@
                 @forelse($items as $item)
                     <tr class="hover:bg-gray-50/50 transition-colors duration-150"
                         :class="selectedIds.includes({{ $item->id }}) ? 'bg-blue-50/20' : ''">
+                        @php
+                            $rowNumber = $isPaginator ? $data->firstItem() + $loop->index : $loop->iteration;
+                        @endphp
                         <!-- Checkbox Cell -->
                         <td class="px-6 py-4 whitespace-nowrap">
                             <input type="checkbox" :value="{{ $item->id }}" x-model="selectedIds"
@@ -102,7 +105,7 @@
                         @foreach ($columns as $key => $label)
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                                 @if ($key === 'no')
-                                    {{ $isPaginator ? $data->firstItem() + $loop->parent->index : $loop->parent->iteration }}
+                                    {{ $rowNumber }}
                                 @elseif($key === 'nama_lengkap')
                                     <div class="flex items-center gap-3">
                                         @if ($item->foto_profil)

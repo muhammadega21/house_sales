@@ -8,7 +8,8 @@
             <div>
                 <h1 class="text-3xl font-bold text-gray-900">Tracking Status Booking</h1>
                 <p class="mt-2 text-sm text-gray-500">Lihat perjalanan status penjualan untuk booking
-                    <strong>{{ $booking->kode_booking }}</strong>.</p>
+                    <strong>{{ $booking->kode_booking }}</strong>.
+                </p>
             </div>
             <div class="flex items-center gap-3">
                 <a href="{{ $backRoute }}"
@@ -85,8 +86,7 @@
                         </div>
                         <div class="flex justify-between gap-3">
                             <span class="font-semibold text-gray-900">Status Bayar</span>
-                            <span
-                                class="inline-flex items-center rounded-full bg-{{ $booking->status_pembayaran_fee->color() }}-100 px-3 py-1 text-xs font-semibold text-{{ $booking->status_pembayaran_fee->color() }}-800">{{ $booking->status_pembayaran_fee->label() }}</span>
+                            <x-badge :status="$booking->status_pembayaran_fee" />
                         </div>
                         <div class="flex justify-between gap-3">
                             <span class="font-semibold text-gray-900">Total Bayar</span>

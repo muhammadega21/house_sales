@@ -126,6 +126,16 @@
                                     default => ucfirst(str_replace('_', ' ', $item['status_verifikasi'])),
                                 };
                                 $badgeColor = $item['is_valid'] ? 'emerald' : ($item['uploaded'] ? 'amber' : 'gray');
+                                $badgeClass = match ($badgeColor) {
+                                    'emerald'
+                                        => 'inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700',
+                                    'amber'
+                                        => 'inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700',
+                                    'gray'
+                                        => 'inline-flex items-center gap-2 rounded-full bg-gray-50 px-3 py-1 text-xs font-semibold text-gray-700',
+                                    default
+                                        => 'inline-flex items-center gap-2 rounded-full bg-gray-50 px-3 py-1 text-xs font-semibold text-gray-700',
+                                };
                             @endphp
                             <div
                                 class="flex items-center justify-between gap-4 rounded-2xl border border-gray-200 bg-white p-4">
@@ -133,8 +143,7 @@
                                     <p class="text-sm font-semibold text-gray-900">{{ $item['label'] }}</p>
                                     <p class="text-xs text-gray-500">{{ $item['wajib'] ? 'Wajib' : 'Opsional' }}</p>
                                 </div>
-                                <div
-                                    class="inline-flex items-center gap-2 rounded-full bg-{{ $badgeColor }}-50 px-3 py-1 text-xs font-semibold text-{{ $badgeColor }}-700">
+                                <div class="{{ $badgeClass }}">
                                     {{ $statusLabel }}
                                 </div>
                             </div>

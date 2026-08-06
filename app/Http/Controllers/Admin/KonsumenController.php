@@ -79,7 +79,7 @@ final class KonsumenController extends Controller
         $this->authorize('update', $konsumen);
 
         try {
-            $this->konsumenService->update($request->validated(), $id);
+            $this->konsumenService->update($request->validated(), Konsumen::class, $id);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return redirect()->back()->withErrors($e->errors())->withInput();
         }

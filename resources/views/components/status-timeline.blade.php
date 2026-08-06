@@ -14,14 +14,35 @@
     @forelse($sorted as $history)
         @php
             $isCurrent = $history->status_sesudah === $latest;
-            $dotClass = $isCurrent ? 'bg-blue-500' : 'bg-emerald-500';
             $statusEnum = \App\Enums\StatusPenjualan::tryFrom($history->status_sesudah);
-            $label = $statusEnum?->label() ?? $history->status_sesudah ?? '-';
-            $color = $isCurrent ? 'blue' : ($statusEnum?->color() ?? 'gray');
+            $label = $statusEnum?->label() ?? ($history->status_sesudah ?? '-');
+            $color = $isCurrent ? 'blue' : $statusEnum?->color() ?? 'gray';
             $bgColor = $statusEnum?->color() ?? 'gray';
+            $dotClass = match ($color) {
+                'blue' => 'bg-blue-500',
+                'emerald' => 'bg-emerald-500',
+                'amber' => 'bg-amber-500',
+                'indigo' => 'bg-indigo-500',
+                'red' => 'bg-red-500',
+                default => 'bg-gray-500',
+            };
+            $badgeClass = match ($bgColor) {
+                'emerald'
+                    => 'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-emerald-100 text-emerald-800',
+                'amber'
+                    => 'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-amber-100 text-amber-800',
+                'indigo'
+                    => 'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-indigo-100 text-indigo-800',
+                'blue'
+                    => 'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-800',
+                'red'
+                    => 'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-red-100 text-red-800',
+                default
+                    => 'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-800',
+            };
         @endphp
         <div class="relative pb-8">
-            @if(!$loop->last)
+            @if (!$loop->last)
                 <div class="absolute left-3 top-3.5 -ml-px h-full w-0.5 bg-gray-200"></div>
             @endif
             <div class="relative flex items-start">
@@ -29,17 +50,17 @@
                 <div class="ml-4 min-w-0 flex-1">
                     <div class="flex items-baseline justify-between">
                         <p class="text-sm font-medium text-gray-900">{{ $label }}</p>
-                        <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-{{ $bgColor }}-100 text-{{ $bgColor }}-800">
+                        <span class="{{ $badgeClass }}">
                             {{ $isCurrent ? 'Aktif' : 'Selesai' }}
                         </span>
                     </div>
                     <p class="text-xs text-gray-500">
                         {{ $history->created_at?->format('d M Y, H:i') ?? '-' }}
-                        @if($history->user?->nama_lengkap)
+                        @if ($history->user?->nama_lengkap)
                             · oleh: {{ $history->user->nama_lengkap }}
                         @endif
                     </p>
-                    @if($history->catatan)
+                    @if ($history->catatan)
                         <p class="mt-1 text-xs text-gray-600">{{ $history->catatan }}</p>
                     @endif
                 </div>
@@ -47,9 +68,12 @@
         </div>
     @empty
         <p class="text-sm text-gray-400">Tidak ada riwayat status</p>
-        @endforelse
+    @endforelse
 
-    @if($latest && $latest !== \App\Enums\StatusPenjualan::Batal->value && $latest !== \App\Enums\StatusPenjualan::SerahTerima->value)
+    @if (
+        $latest &&
+            $latest !== \App\Enums\StatusPenjualan::Batal->value &&
+            $latest !== \App\Enums\StatusPenjualan::SerahTerima->value)
         <div class="relative">
             <div class="relative flex items-start">
                 <div class="flex h-6 w-6 items-center justify-center rounded-full bg-gray-300">

@@ -10,10 +10,7 @@
                 <h1 class="text-3xl font-bold text-gray-900">{{ $booking->kode_booking }}</h1>
                 <div class="mt-2 flex flex-wrap items-center gap-3">
                     <x-badge :status="$booking->statusPenjualan?->status_saat_ini?->value ?? 'booking'" />
-                    <span
-                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-{{ $booking->status_pembayaran_fee->color() }}-100 text-{{ $booking->status_pembayaran_fee->color() }}-800">
-                        {{ $booking->status_pembayaran_fee->label() }}
-                    </span>
+                    <x-badge :status="$booking->status_pembayaran_fee" />
                     <span class="text-sm text-gray-500">
                         <svg class="inline h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -242,10 +239,9 @@
                             </a>
 
                             @php
-                                $docsLengkap =
-                                    $booking->konsumen?->dokumenKpr->where('status_verifikasi', 'valid')->count() ===
-                                        $booking->konsumen?->dokumenKpr->count() &&
-                                    $booking->konsumen?->dokumenKpr->isNotEmpty();
+                                $docsLengkap = app(\App\Services\DokumenService::class)->isComplete(
+                                    $booking->konsumen?->id ?? 0,
+                                );
                             @endphp
                             <a href="{{ route('admin.pengajuan-kpr.show', $booking->pengajuanKpr?->id ?? '#') }}"
                                 class="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 {{ $docsLengkap ? '' : 'opacity-50 cursor-not-allowed pointer-events-none' }}">
@@ -344,6 +340,8 @@
                             <form action="{{ route('admin.status-penjualan.update', $booking->statusPenjualan?->id) }}"
                                 method="POST" id="formUbahStatus">
                                 @csrf @method('PUT')
+                                <input type="hidden" name="catatan"
+                                    value="Perubahan status penjualan dilakukan dari halaman booking.">
                                 <select name="status_baru" id="statusBaru"
                                     class="w-full rounded-lg border border-gray-300 py-2 text-sm transition focus:border-primary focus:ring-primary"
                                     onchange="this.closest('form').submit()">

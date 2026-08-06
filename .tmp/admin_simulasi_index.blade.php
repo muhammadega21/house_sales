@@ -32,9 +32,3 @@
         <x-simulasi-form :units="$units" :hitung-url="route('admin.simulasi.hitung')" :show-save-button="false" :show-export-button="false" :show-comparison-button="false" />
     </div>
 @endsection
-
-@push('scripts')
-    <script>
-        // No inline admin simulasi script required; shared component handles behavior.
-    </script>
-@endpush

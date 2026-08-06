@@ -83,9 +83,24 @@
                                 </td>
                                 <td class="px-4 py-3">
                                     @if ($item['uploaded'])
-                                        @php $status = $item['status_verifikasi'] ?? 'belum_diverifikasi'; @endphp
-                                        <span
-                                            class="inline-flex items-center rounded-full bg-{{ $status === 'valid' ? 'emerald' : ($status === 'perlu_revisi' ? 'amber' : 'gray') }}-100 px-2.5 py-1 text-xs font-semibold text-{{ $status === 'valid' ? 'emerald' : ($status === 'perlu_revisi' ? 'amber' : 'gray') }}-700">
+                                        @php
+                                            $status = $item['status_verifikasi'] ?? 'belum_diverifikasi';
+                                            $badgeColor =
+                                                $status === 'valid'
+                                                    ? 'emerald'
+                                                    : ($status === 'perlu_revisi'
+                                                        ? 'amber'
+                                                        : 'gray');
+                                            $badgeClass = match ($badgeColor) {
+                                                'emerald'
+                                                    => 'inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700',
+                                                'amber'
+                                                    => 'inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700',
+                                                default
+                                                    => 'inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-700',
+                                            };
+                                        @endphp
+                                        <span class="{{ $badgeClass }}">
                                             {{ $status === 'valid' ? 'Valid' : ($status === 'perlu_revisi' ? 'Perlu Revisi' : ($status === 'tidak_valid' ? 'Tidak Valid' : 'Belum Diverifikasi')) }}
                                         </span>
                                     @else
@@ -145,8 +160,24 @@
                                     </td>
                                     <td class="px-4 py-3">{{ $document->tanggal_upload?->format('d/m/Y H:i') }}</td>
                                     <td class="px-4 py-3">
-                                        <span
-                                            class="inline-flex items-center rounded-full bg-{{ $document->status_verifikasi === 'valid' ? 'emerald' : ($document->status_verifikasi === 'perlu_revisi' ? 'amber' : 'gray') }}-100 px-2.5 py-1 text-xs font-semibold text-{{ $document->status_verifikasi === 'valid' ? 'emerald' : ($document->status_verifikasi === 'perlu_revisi' ? 'amber' : 'gray') }}-700">
+                                        @php
+                                            $docStatus = $document->status_verifikasi;
+                                            $docBadgeColor =
+                                                $docStatus === 'valid'
+                                                    ? 'emerald'
+                                                    : ($docStatus === 'perlu_revisi'
+                                                        ? 'amber'
+                                                        : 'gray');
+                                            $docBadgeClass = match ($docBadgeColor) {
+                                                'emerald'
+                                                    => 'inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700',
+                                                'amber'
+                                                    => 'inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700',
+                                                default
+                                                    => 'inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-700',
+                                            };
+                                        @endphp
+                                        <span class="{{ $docBadgeClass }}">
                                             {{ $document->status_verifikasi === 'valid' ? 'Valid' : ($document->status_verifikasi === 'perlu_revisi' ? 'Perlu Revisi' : ($document->status_verifikasi === 'tidak_valid' ? 'Tidak Valid' : 'Belum Diverifikasi')) }}
                                         </span>
                                     </td>

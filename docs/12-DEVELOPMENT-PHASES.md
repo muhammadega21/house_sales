@@ -119,7 +119,7 @@
 - [✅] Riwayat Perubahan Status (History Log)
 - [✅] Simulasi Pembayaran (Service & Kalkulator)
 - [✅] UI Simulasi Pembayaran (Form & Hasil)
-- [ ] Perbandingan 3 Metode & Export PDF
+- [✅] Perbandingan 3 Metode & Export PDF
 
 ### Deliverables:
 

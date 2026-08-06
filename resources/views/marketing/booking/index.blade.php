@@ -159,10 +159,7 @@
                                 <td class="px-4 py-4 text-gray-700">Rp
                                     {{ number_format($booking->booking_fee, 0, ',', '.') }}</td>
                                 <td class="px-4 py-4">
-                                    <span
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-{{ $booking->status_pembayaran_fee->color() }}-100 text-{{ $booking->status_pembayaran_fee->color() }}-800">
-                                        {{ $booking->status_pembayaran_fee->label() }}
-                                    </span>
+                                    <x-badge :status="$booking->status_pembayaran_fee" />
                                 </td>
                                 <td class="px-4 py-4">
                                     @php
@@ -170,10 +167,7 @@
                                             $booking->statusHistory->sortByDesc('id')->first()?->status_sesudah ??
                                             'booking';
                                     @endphp
-                                    <span
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-{{ \App\Enums\StatusPenjualan::tryFrom($status)?->color() ?? 'gray' }}-100 text-{{ \App\Enums\StatusPenjualan::tryFrom($status)?->color() ?? 'gray' }}-800">
-                                        {{ \App\Enums\StatusPenjualan::tryFrom($status)?->label() ?? $status }}
-                                    </span>
+                                    <x-badge :status="\App\Enums\StatusPenjualan::tryFrom($status)" />
                                 </td>
                                 <td class="px-4 py-4 text-right">
                                     <div class="inline-flex items-center gap-3">

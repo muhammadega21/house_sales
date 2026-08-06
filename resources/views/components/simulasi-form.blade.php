@@ -8,6 +8,13 @@
         'subsidi' => ['min' => 1, 'max' => 5],
         'non_subsidi' => ['min' => 10, 'max' => 30],
     ],
+    'hitungUrl' => route('marketing.simulasi.hitung'),
+    'simpanUrl' => route('marketing.simulasi.simpan'),
+    'perbandinganUrl' => route('marketing.simulasi.perbandingan'),
+    'exportPdfUrl' => route('marketing.simulasi.export-pdf'),
+    'showSaveButton' => true,
+    'showExportButton' => true,
+    'showComparisonButton' => true,
 ])
 
 <div x-data='simulasiForm({
@@ -17,6 +24,13 @@
     defaultBunga: @json($defaultBunga),
     defaultDiskon: @json($defaultDiskon),
     dpLimits: @json($dpLimits),
+    hitungUrl: @json($hitungUrl),
+    simpanUrl: @json($simpanUrl),
+    perbandinganUrl: @json($perbandinganUrl),
+    exportPdfUrl: @json($exportPdfUrl),
+    showSaveButton: @json($showSaveButton),
+    showExportButton: @json($showExportButton),
+    showComparisonButton: @json($showComparisonButton),
 })'
     x-init="init()" @save-simulasi="saveSimulation()" @export-pdf="exportPdf()" class="space-y-6">
 
@@ -160,15 +174,15 @@
                     class="inline-flex items-center justify-center rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-primary-dark transition disabled:opacity-60 disabled:cursor-not-allowed">
                     <span x-text="loading ? 'Memuat...' : 'Hitung Simulasi'"></span>
                 </button>
-                <button type="button" @click="saveSimulation()"
+                <button type="button" x-show="showSaveButton" @click="saveSimulation()"
                     class="inline-flex items-center justify-center rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 transition"
                     :disabled="!hasil">
                     Simpan Simulasi
                 </button>
-                <button type="button" @click="exportPdf()"
+                <button type="button" x-show="showExportButton" @click="exportPdf()"
                     class="inline-flex items-center justify-center rounded-2xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-200 transition"
                     :disabled="!hasil">Export PDF</button>
-                <button type="button" @click="viewComparison()"
+                <button type="button" x-show="showComparisonButton" @click="viewComparison()"
                     class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition"
                     :disabled="!hasil">Lihat Perbandingan</button>
             </div>
@@ -235,6 +249,13 @@
                             bunga: config.defaultBunga ?? 8,
                             diskon: config.defaultDiskon ?? 0,
                             konsumenId: '',
+                            hitungUrl: config.hitungUrl || null,
+                            simpanUrl: config.simpanUrl || null,
+                            perbandinganUrl: config.perbandinganUrl || null,
+                            exportPdfUrl: config.exportPdfUrl || null,
+                            showSaveButton: config.showSaveButton ?? true,
+                            showExportButton: config.showExportButton ?? true,
+                            showComparisonButton: config.showComparisonButton ?? true,
                             hasil: null,
                             perbandingan: {},
                             errorMessage: '',
@@ -333,7 +354,7 @@
                                 this.errorMessage = '';
 
                                 try {
-                                    const response = await fetch('/marketing/simulasi/hitung', {
+                                    const response = await fetch(this.hitungUrl, {
                                         method: 'POST',
                                         credentials: 'same-origin',
                                         headers: {
@@ -399,7 +420,12 @@
                             async saveSimulation() {
                                 if (!this.hasil) return;
                                 try {
-                                    const response = await fetch('/marketing/simulasi/simpan', {
+                                    if (!this.simpanUrl) {
+                                        this.errorMessage = 'Fitur simpan tidak tersedia untuk mode ini.';
+                                        return;
+                                    }
+
+                                    const response = await fetch(this.simpanUrl, {
                                         method: 'POST',
                                         credentials: 'same-origin',
                                         headers: {
@@ -457,7 +483,12 @@
                                     return;
                                 }
 
-                                window.location.href = '/marketing/simulasi/perbandingan?' + this.buildQueryParams();
+                                if (!this.perbandinganUrl) {
+                                    this.errorMessage = 'Fitur perbandingan tidak tersedia untuk mode ini.';
+                                    return;
+                                }
+
+                                window.location.href = this.perbandinganUrl + '?' + this.buildQueryParams();
                             },
 
                             exportPdf() {
@@ -466,7 +497,12 @@
                                     return;
                                 }
 
-                                window.open('/marketing/simulasi/export-pdf?' + this.buildQueryParams(), '_blank');
+                                if (!this.exportPdfUrl) {
+                                    this.errorMessage = 'Fitur export PDF tidak tersedia untuk mode ini.';
+                                    return;
+                                }
+
+                                window.open(this.exportPdfUrl + '?' + this.buildQueryParams(), '_blank');
                             },
                         };
                     }

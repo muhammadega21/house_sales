@@ -64,12 +64,15 @@ class PengajuanKprService extends BaseService
                 throw new \InvalidArgumentException('Status penjualan booking tidak ditemukan.');
             }
 
-            app(StatusPenjualanService::class)->transition(
-                $statusPenjualan,
-                StatusPenjualanEnum::PengajuanKpr->value,
-                'Pengajuan KPR dimulai oleh marketing.',
-                Auth::id() ?? 0,
-            );
+            // Hanya ubah status penjualan jika pengajuan dibuat dalam keadaan "diajukan".
+            if ($pengajuan->status_pengajuan === 'diajukan') {
+                app(StatusPenjualanService::class)->transition(
+                    $statusPenjualan,
+                    StatusPenjualanEnum::PengajuanKpr->value,
+                    'Pengajuan KPR dimulai oleh marketing.',
+                    Auth::id() ?? 0,
+                );
+            }
 
             return $pengajuan->fresh();
         });
@@ -150,6 +153,18 @@ class PengajuanKprService extends BaseService
     private function handleSideEffects(PengajuanKpr $pengajuan, string $newStatus, int $userId): void
     {
         $statusPenjualan = StatusPenjualan::where('id_booking', $pengajuan->id_booking)->first();
+
+        if ($statusPenjualan && $statusPenjualan->status_saat_ini === StatusPenjualanEnum::Booking->value) {
+            if (in_array($newStatus, ['diajukan', 'verifikasi_bank', 'disetujui', 'akad'], true)) {
+                app(StatusPenjualanService::class)->transition(
+                    $statusPenjualan,
+                    StatusPenjualanEnum::PengajuanKpr->value,
+                    'Status penjualan otomatis disinkronkan ke Pengajuan KPR karena status pengajuan berubah.',
+                    $userId,
+                );
+                $statusPenjualan->refresh();
+            }
+        }
 
         match ($newStatus) {
             'diajukan', 'verifikasi_bank' => null,

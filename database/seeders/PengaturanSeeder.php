@@ -40,6 +40,36 @@ class PengaturanSeeder extends Seeder
                 'nilai' => '021-5551234',
                 'keterangan' => 'Nomor telepon kantor pusat',
             ],
+            [
+                'kunci' => 'default_kpr_bunga',
+                'nilai' => '8',
+                'keterangan' => 'Bunga KPR default (%)',
+            ],
+            [
+                'kunci' => 'default_cash_keras_diskon',
+                'nilai' => '0',
+                'keterangan' => 'Diskon default untuk cash keras (%)',
+            ],
+            [
+                'kunci' => 'dp_subsidi_min_persen',
+                'nilai' => '1',
+                'keterangan' => 'Persentase DP subsidi minimum (%)',
+            ],
+            [
+                'kunci' => 'dp_subsidi_max_persen',
+                'nilai' => '5',
+                'keterangan' => 'Persentase DP subsidi maksimum (%)',
+            ],
+            [
+                'kunci' => 'dp_non_subsidi_min_persen',
+                'nilai' => '10',
+                'keterangan' => 'Persentase DP non-subsidi minimum (%)',
+            ],
+            [
+                'kunci' => 'dp_non_subsidi_max_persen',
+                'nilai' => '30',
+                'keterangan' => 'Persentase DP non-subsidi maksimum (%)',
+            ],
         ];
 
         foreach ($settings as $setting) {

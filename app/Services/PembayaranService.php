@@ -9,6 +9,8 @@ use App\Enums\StatusPembayaranFee;
 use App\Enums\StatusVerifikasi;
 use App\Models\Booking;
 use App\Models\Pembayaran;
+use App\Models\StatusPenjualan;
+use App\Services\StatusPenjualanService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
@@ -223,8 +225,32 @@ class PembayaranService extends BaseService
         $totalTerverifikasi = $this->getTotalTerverifikasi($booking->id);
 
         if ($totalTerverifikasi >= ($booking->unit?->harga_jual ?? 0)) {
-            // Total pembayaran sudah mencapai harga unit
-            // Logika lanjutan (Fase 5): update status penjualan → serah_terima
+            // Total pembayaran sudah mencapai harga unit -> tandai lunas
+            $booking->update([
+                'status_pembayaran_fee' => StatusPembayaranFee::SudahBayar->value,
+            ]);
+
+            // Jika ada record status penjualan, pindahkan ke Serah Terima (final)
+            $statusPenjualan = StatusPenjualan::where('id_booking', $booking->id)->first();
+            if ($statusPenjualan) {
+                try {
+                    app(StatusPenjualanService::class)->transition(
+                        $statusPenjualan,
+                        \App\Enums\StatusPenjualan::SerahTerima->value,
+                        'Pembayaran terverifikasi mencapai harga unit. Menandai lunas dan serah terima.',
+                        Auth::id() ?? 0
+                    );
+                } catch (\Throwable $e) {
+                    // Jangan memblokir alur jika transisi gagal — catat dan lanjutkan
+                    activity_log([
+                        'id_user' => Auth::id() ?? 0,
+                        'aksi' => 'error_status_transition',
+                        'entitas' => 'status_penjualan',
+                        'entitas_id' => $booking->id,
+                        'deskripsi' => 'Gagal transisi ke serah_terima: ' . $e->getMessage(),
+                    ]);
+                }
+            }
         }
 
         // Notifikasi untuk marketing (opsional tapi disarankan)

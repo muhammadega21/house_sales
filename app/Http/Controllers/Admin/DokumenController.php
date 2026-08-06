@@ -32,7 +32,7 @@ final class DokumenController extends Controller
             ->orderByDesc('tanggal_upload');
 
         if ($search !== '') {
-            $term = '%'.$search.'%';
+            $term = '%' . $search . '%';
             $query->where(function ($q) use ($term) {
                 $q->whereHas('konsumen', function ($q) use ($term) {
                     $q->where('nama_lengkap', 'like', $term)
@@ -68,7 +68,7 @@ final class DokumenController extends Controller
         $stats = $this->dokumenService->getStatsForAdmin();
 
         $marketingOptions = User::marketing()->aktif()->orderBy('nama_lengkap')->get()
-            ->mapWithKeys(fn ($m) => [$m->id => $m->nama_lengkap]);
+            ->mapWithKeys(fn($m) => [$m->id => $m->nama_lengkap]);
 
         return view('admin.dokumen.index', compact(
             'documents',
@@ -108,11 +108,17 @@ final class DokumenController extends Controller
             'catatan' => ['nullable', 'string', 'max:500'],
         ]);
 
+        // $document->update([
+        //     'status_verifikasi' => $request->input('status_verifikasi'),
+        //     'catatan_verifikasi' => $request->input('catatan'),
+        //     'diverifikasi_oleh' => auth()->id(),
+        //     'diverifikasi_at' => now(),
+        // ]);
+
         $document->update([
-            'status_verifikasi' => $request->input('status_verifikasi'),
-            'catatan_verifikasi' => $request->input('catatan'),
-            'diverifikasi_oleh' => auth()->id(),
-            'diverifikasi_at' => now(),
+            'status_verifikasi'  => $request->input('status_verifikasi'),
+            'catatan_verifikasi' => $request->input('catatan_verifikasi'),
+            'tanggal_verifikasi' => now(),
         ]);
 
         $message = $request->input('status_verifikasi') === 'valid'

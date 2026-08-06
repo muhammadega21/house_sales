@@ -75,15 +75,15 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     // Prospek Management
     Route::get('/prospek', [Admin\ProspekController::class, 'index'])->name('prospek.index');
+    Route::get('/prospek/stats', [Admin\ProspekController::class, 'stats'])->name('prospek.stats');
     Route::get('/prospek/create', [Admin\ProspekController::class, 'create'])->name('prospek.create');
     Route::post('/prospek', [Admin\ProspekController::class, 'store'])->name('prospek.store');
+    Route::get('/prospek/{id}', [Admin\ProspekController::class, 'show'])->name('prospek.show');
     Route::get('/prospek/{id}/edit', [Admin\ProspekController::class, 'edit'])->name('prospek.edit');
     Route::get('/prospek/{id}/convert', [Admin\ProspekController::class, 'convert'])->name('prospek.convert');
     Route::post('/prospek/{id}/convert', [Admin\ProspekController::class, 'storeConvert'])->name('prospek.store-convert');
     Route::put('/prospek/{id}', [Admin\ProspekController::class, 'update'])->name('prospek.update');
     Route::delete('/prospek/{id}', [Admin\ProspekController::class, 'destroy'])->name('prospek.destroy');
-    Route::get('/prospek/{id}', [Admin\ProspekController::class, 'show'])->name('prospek.show');
-    Route::get('/prospek/stats', [Admin\ProspekController::class, 'stats'])->name('prospek.stats');
 
     // Booking Management
     Route::get('/booking', [Admin\BookingController::class, 'index'])->name('booking.index');
@@ -95,9 +95,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::put('/booking/{id}', [Admin\BookingController::class, 'update'])->name('booking.update');
     Route::get('/booking/{id}/cancel', [Admin\BookingController::class, 'cancel'])->name('booking.cancel');
     Route::post('/booking/{id}/cancel', [Admin\BookingController::class, 'processCancel'])->name('booking.process-cancel');
-    Route::delete('/prospek/{id}', [Admin\ProspekController::class, 'destroy'])->name('prospek.destroy');
-    Route::get('/prospek/{id}', [Admin\ProspekController::class, 'show'])->name('prospek.show');
-    Route::get('/prospek/stats', [Admin\ProspekController::class, 'stats'])->name('prospek.stats');
 
     // Simulasi Pembayaran
     Route::get('/simulasi', [Admin\SimulasiController::class, 'index'])->name('simulasi.index');
@@ -191,8 +188,11 @@ Route::middleware(['auth', 'role:marketing'])->prefix('marketing')->name('market
     // Kinerja
     Route::get('/kinerja', [Marketing\KinerjaController::class, 'index'])->name('kinerja.index');
 
+
     // Status Penjualan
     Route::put('/status-penjualan/{id}', [Marketing\StatusPenjualanController::class, 'update'])->name('status-penjualan.update');
+    Route::get('/status-penjualan', [Marketing\StatusPenjualanController::class, 'index'])->name('status-penjualan.index');
+    Route::get('/status-penjualan/{id}', [Marketing\StatusPenjualanController::class, 'show'])->name('status-penjualan.show');
 });
 
 /*
@@ -204,8 +204,8 @@ Route::middleware(['auth', 'role:manajemen'])->prefix('manajemen')->name('manaje
     Route::get('/dashboard', [Manajemen\DashboardController::class, 'index'])->name('dashboard');
 
     // Laporan
-    Route::get('/laporan/penjualan', [Manajemen\LaporanController::class, 'penjualan'])->name('laporan.penjualan');
-    Route::get('/laporan/marketing', [Manajemen\LaporanController::class, 'marketing'])->name('laporan.marketing');
-    Route::get('/laporan/export-pdf', [Manajemen\LaporanController::class, 'exportPdf'])->name('laporan.export-pdf');
-    Route::get('/laporan/export-excel', [Manajemen\LaporanController::class, 'exportExcel'])->name('laporan.export-excel');
+    // Route::get('/laporan/penjualan', [Manajemen\LaporanController::class, 'penjualan'])->name('laporan.penjualan');
+    // Route::get('/laporan/marketing', [Manajemen\LaporanController::class, 'marketing'])->name('laporan.marketing');
+    // Route::get('/laporan/export-pdf', [Manajemen\LaporanController::class, 'exportPdf'])->name('laporan.export-pdf');
+    // Route::get('/laporan/export-excel', [Manajemen\LaporanController::class, 'exportExcel'])->name('laporan.export-excel');
 });

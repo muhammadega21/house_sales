@@ -66,7 +66,13 @@ class MarketingService extends BaseService
         $prospek = DB::table('prospek')->where('id_marketing', $idMarketing)->whereBetween('tanggal_prospek', [$start->toDateString(), $end->toDateString()])->count();
         $booking = DB::table('booking')->where('id_marketing', $idMarketing)->whereBetween('tanggal_booking', [$start->toDateString(), $end->toDateString()])->count();
         $status = DB::table('status_penjualan')->join('booking', 'booking.id', '=', 'status_penjualan.id_booking')->where('booking.id_marketing', $idMarketing)->whereBetween('status_penjualan.tanggal_perubahan', [$start, $end]);
-        $closingRows = (clone $status)->where('status_saat_ini', 'akad')->join('unit_rumah', 'unit_rumah.id', '=', 'status_penjualan.id_unit')->select('unit_rumah.harga_jual', 'booking.id_konsumen', 'unit_rumah.kode_unit', 'status_penjualan.tanggal_perubahan')->get();
+        $closingRows = (clone $status)
+            ->where('status_saat_ini', 'akad')
+            ->join('unit_rumah', 'unit_rumah.id', '=', 'status_penjualan.id_unit')
+            ->join('booking', 'booking.id', '=', 'status_penjualan.id_booking')
+            ->leftJoin('konsumen', 'konsumen.id', '=', 'booking.id_konsumen')
+            ->select('unit_rumah.harga_jual', 'booking.id_konsumen', 'konsumen.nama_lengkap as nama_konsumen', 'unit_rumah.kode_unit', 'status_penjualan.tanggal_perubahan')
+            ->get();
         $closing = $closingRows->count();
         $batal = (clone $status)->where('status_saat_ini', 'batal')->count();
         $marketing = User::findOrFail($idMarketing);

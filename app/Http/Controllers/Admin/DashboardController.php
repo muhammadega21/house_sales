@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\StatusProspek;
+use App\Enums\StatusUnit;
 use App\Http\Controllers\Controller;
 use App\Models\Prospek;
 use App\Models\User;
@@ -21,6 +22,17 @@ final class DashboardController extends Controller
         $totalProspekBulanIni = Prospek::query()
             ->where('tanggal_prospek', '>=', $bulanIni)
             ->count();
+
+        // Summary metrics
+        $totalUsers = User::count();
+        $totalUnitsAvailable = DB::table('unit_rumah')->where('status_unit', StatusUnit::Tersedia->value)->count();
+        $totalUnitsSold = DB::table('unit_rumah')->where('status_unit', StatusUnit::Dijual->value)->count();
+        $totalBooking = DB::table('booking')->count();
+        $totalOmsetBulanIni = DB::table('status_penjualan')
+            ->join('unit_rumah', 'unit_rumah.id', '=', 'status_penjualan.id_unit')
+            ->where('status_penjualan.status_saat_ini', 'akad')
+            ->whereBetween('status_penjualan.tanggal_perubahan', [$bulanIni->toDateString(), $bulanIni->copy()->endOfMonth()->toDateString()])
+            ->sum('unit_rumah.harga_jual');
 
         $prospekPerMarketing = User::marketing()
             ->aktif()
@@ -60,7 +72,12 @@ final class DashboardController extends Controller
                 'prospekPerMarketing',
                 'conversionRatePerusahaan',
                 'topMarketingByProspek',
-                'topMarketingByConversion'
+                'topMarketingByConversion',
+                'totalUsers',
+                'totalUnitsAvailable',
+                'totalUnitsSold',
+                'totalBooking',
+                'totalOmsetBulanIni'
             ),
             ['activeTab' => 'dashboard']
         ));
