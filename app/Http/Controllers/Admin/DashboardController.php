@@ -4,80 +4,129 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\StatusProspek;
-use App\Enums\StatusUnit;
 use App\Http\Controllers\Controller;
-use App\Models\Prospek;
-use App\Models\User;
+use App\Services\LaporanService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 final class DashboardController extends Controller
 {
+    public function __construct(private readonly LaporanService $laporanService) {}
+
     public function index(Request $request): View
     {
         $bulanIni = now()->startOfMonth();
+        $akhirBulanIni = $bulanIni->copy()->endOfMonth();
 
-        $totalProspekBulanIni = Prospek::query()
-            ->where('tanggal_prospek', '>=', $bulanIni)
-            ->count();
+        $dashboard = $this->laporanService->getDashboardAdmin();
 
-        // Summary metrics
-        $totalUsers = User::count();
-        $totalUnitsAvailable = DB::table('unit_rumah')->where('status_unit', StatusUnit::Tersedia->value)->count();
-        $totalUnitsSold = DB::table('unit_rumah')->where('status_unit', StatusUnit::Dijual->value)->count();
-        $totalBooking = DB::table('booking')->count();
-        $totalOmsetBulanIni = DB::table('status_penjualan')
-            ->join('unit_rumah', 'unit_rumah.id', '=', 'status_penjualan.id_unit')
-            ->where('status_penjualan.status_saat_ini', 'akad')
-            ->whereBetween('status_penjualan.tanggal_perubahan', [$bulanIni->toDateString(), $bulanIni->copy()->endOfMonth()->toDateString()])
-            ->sum('unit_rumah.harga_jual');
+        $penjualanPerBulan = $dashboard['penjualan_per_bulan'];
+        $kategoriBreakdown = $dashboard['kategori_breakdown'];
+        $totalUsers = $dashboard['total_users'];
+        $totalUnitsAvailable = $dashboard['total_tersedia'];
+        $totalUnits = $dashboard['total_unit'];
+        $totalBooking = $dashboard['total_booking_bulan_ini'];
+        $totalOmsetBulanIni = $dashboard['total_omset_bulan_ini'];
 
-        $prospekPerMarketing = User::marketing()
-            ->aktif()
-            ->withCount(['prospek as total_prospek' => function ($query) use ($bulanIni) {
-                $query->where('tanggal_prospek', '>=', $bulanIni);
-            }])
-            ->withCount(['prospek as konversi' => function ($query) use ($bulanIni) {
-                $query->where('status_prospek', StatusProspek::JadiKonsumen->value)
-                    ->where('tanggal_prospek', '>=', $bulanIni);
-            }])
-            ->orderByDesc('total_prospek')
-            ->get()
-            ->map(function ($m) {
-                $conversionRate = $m->total_prospek > 0
-                    ? round(($m->konversi / $m->total_prospek) * 100, 1)
-                    : 0;
+        $topMarketing = DB::table('users as m')
+            ->join('booking as b', 'b.id_marketing', '=', 'm.id')
+            ->join('status_penjualan as sp', 'sp.id_booking', '=', 'b.id')
+            ->join('unit_rumah as u', 'u.id', '=', 'sp.id_unit')
+            ->where('m.role', 'marketing')
+            ->whereIn('sp.status_saat_ini', ['akad', 'serah_terima'])
+            ->whereBetween('sp.tanggal_perubahan', [$bulanIni->toDateString(), $akhirBulanIni->toDateString()])
+            ->select([
+                'm.nama_lengkap',
+                DB::raw('COUNT(sp.id) as total_closing'),
+                DB::raw('SUM(u.harga_jual) as total_nilai'),
+                DB::raw('SUM(u.harga_jual * (m.persentase_komisi / 100)) as total_komisi'),
+            ])
+            ->groupBy('m.id', 'm.nama_lengkap')
+            ->orderByDesc('total_closing')
+            ->limit(5)
+            ->get();
 
-                return [
-                    'id' => $m->id,
-                    'nama_lengkap' => $m->nama_lengkap,
-                    'total_prospek' => $m->total_prospek,
-                    'konversi' => $m->konversi,
-                    'conversion_rate' => $conversionRate,
-                ];
-            });
+        $conversionRatePerusahaan = $totalBooking > 0
+            ? round(($dashboard['total_terjual'] / $totalBooking) * 100, 1)
+            : 0.0;
 
-        $conversionRatePerusahaan = $totalProspekBulanIni > 0
-            ? round(($prospekPerMarketing->sum('konversi') / $totalProspekBulanIni) * 100, 1)
-            : 0;
+        $averageClosingTime = DB::table('status_penjualan as sp')
+            ->join('booking as b', 'b.id', '=', 'sp.id_booking')
+            ->where('sp.status_saat_ini', 'akad')
+            ->whereBetween('sp.tanggal_perubahan', [$bulanIni->toDateString(), $akhirBulanIni->toDateString()])
+            ->whereNotNull('b.tanggal_booking')
+            ->selectRaw('AVG(DATEDIFF(sp.tanggal_perubahan, b.tanggal_booking)) as avg_days')
+            ->value('avg_days');
 
-        $topMarketingByProspek = $prospekPerMarketing->sortByDesc('total_prospek')->take(5);
-        $topMarketingByConversion = $prospekPerMarketing->where('conversion_rate', '>', 0)->sortByDesc('conversion_rate')->take(5);
+        $averageClosingTime = $averageClosingTime !== null ? round((float) $averageClosingTime, 1) : 0.0;
+
+        $trenBulanan = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $bulanRef = now()->copy()->subMonths($i);
+            $awal = $bulanRef->copy()->startOfMonth();
+            $akhir = $bulanRef->copy()->endOfMonth();
+
+            $totalProspek = DB::table('prospek')
+                ->whereBetween('tanggal_prospek', [$awal->toDateString(), $akhir->toDateString()])
+                ->count();
+
+            $totalClosing = DB::table('status_penjualan as sp')
+                ->join('booking as b', 'b.id', '=', 'sp.id_booking')
+                ->where('sp.status_saat_ini', 'akad')
+                ->whereBetween('sp.tanggal_perubahan', [$awal->toDateString(), $akhir->toDateString()])
+                ->count();
+
+            $trenBulanan[] = [
+                'label' => $bulanRef->translatedFormat('M Y'),
+                'prospek' => $totalProspek,
+                'closing' => $totalClosing,
+            ];
+        }
+
+        $latestBookings = DB::table('booking as b')
+            ->leftJoin('konsumen as k', 'k.id', '=', 'b.id_konsumen')
+            ->leftJoin('status_penjualan as sp', function ($join) {
+                $join->on('sp.id_booking', '=', 'b.id')
+                    ->whereRaw('sp.tanggal_perubahan = (SELECT MAX(tanggal_perubahan) FROM status_penjualan WHERE id_booking = b.id)');
+            })
+            ->select([
+                'b.kode_booking',
+                'b.tanggal_booking',
+                'k.nama_lengkap as nama_konsumen',
+                'b.created_at',
+                'sp.status_saat_ini as status_penjualan',
+            ])
+            ->orderByDesc('b.created_at')
+            ->limit(5)
+            ->get();
+
+        $unitsAvailableByPerumahan = DB::table('perumahan as p')
+            ->leftJoin('unit_rumah as u', 'u.id_perumahan', '=', 'p.id')
+            ->select([
+                'p.nama_perumahan',
+                DB::raw("SUM(CASE WHEN u.status_unit = 'tersedia' THEN 1 ELSE 0 END) as tersedia"),
+                DB::raw('COUNT(u.id) as total_unit'),
+            ])
+            ->groupBy('p.id', 'p.nama_perumahan')
+            ->orderBy('p.nama_perumahan')
+            ->get();
 
         return view('admin.dashboard', array_merge(
             compact(
-                'totalProspekBulanIni',
-                'prospekPerMarketing',
-                'conversionRatePerusahaan',
-                'topMarketingByProspek',
-                'topMarketingByConversion',
                 'totalUsers',
                 'totalUnitsAvailable',
-                'totalUnitsSold',
+                'totalUnits',
                 'totalBooking',
-                'totalOmsetBulanIni'
+                'totalOmsetBulanIni',
+                'conversionRatePerusahaan',
+                'averageClosingTime',
+                'penjualanPerBulan',
+                'kategoriBreakdown',
+                'trenBulanan',
+                'topMarketing',
+                'latestBookings',
+                'unitsAvailableByPerumahan'
             ),
             ['activeTab' => 'dashboard']
         ));

@@ -85,14 +85,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::put('/prospek/{id}', [Admin\ProspekController::class, 'update'])->name('prospek.update');
     Route::delete('/prospek/{id}', [Admin\ProspekController::class, 'destroy'])->name('prospek.destroy');
 
-    // Booking Management
-    Route::get('/booking', [Admin\BookingController::class, 'index'])->name('booking.index');
-    Route::get('/booking/create', [Admin\BookingController::class, 'create'])->name('booking.create');
-    Route::post('/booking', [Admin\BookingController::class, 'store'])->name('booking.store');
-    Route::get('/booking/{id}', [Admin\BookingController::class, 'show'])->name('booking.show');
+    // Booking Management (extra routes beyond resource)
     Route::get('/booking/{id}/tracking', [Admin\BookingController::class, 'tracking'])->name('booking.tracking');
-    Route::get('/booking/{id}/edit', [Admin\BookingController::class, 'edit'])->name('booking.edit');
-    Route::put('/booking/{id}', [Admin\BookingController::class, 'update'])->name('booking.update');
     Route::get('/booking/{id}/cancel', [Admin\BookingController::class, 'cancel'])->name('booking.cancel');
     Route::post('/booking/{id}/cancel', [Admin\BookingController::class, 'processCancel'])->name('booking.process-cancel');
 
@@ -204,8 +198,8 @@ Route::middleware(['auth', 'role:manajemen'])->prefix('manajemen')->name('manaje
     Route::get('/dashboard', [Manajemen\DashboardController::class, 'index'])->name('dashboard');
 
     // Laporan
-    // Route::get('/laporan/penjualan', [Manajemen\LaporanController::class, 'penjualan'])->name('laporan.penjualan');
-    // Route::get('/laporan/marketing', [Manajemen\LaporanController::class, 'marketing'])->name('laporan.marketing');
-    // Route::get('/laporan/export-pdf', [Manajemen\LaporanController::class, 'exportPdf'])->name('laporan.export-pdf');
-    // Route::get('/laporan/export-excel', [Manajemen\LaporanController::class, 'exportExcel'])->name('laporan.export-excel');
+    Route::get('/laporan/penjualan', [Manajemen\LaporanController::class, 'penjualan'])->name('laporan.penjualan');
+    Route::get('/laporan/marketing', [Manajemen\LaporanController::class, 'marketing'])->name('laporan.marketing');
+    Route::get('/laporan/export-pdf', [Manajemen\LaporanController::class, 'exportPdf'])->name('laporan.export-pdf');
+    Route::get('/laporan/export-excel', [Manajemen\LaporanController::class, 'exportExcel'])->name('laporan.export-excel');
 });

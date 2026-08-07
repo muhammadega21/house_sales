@@ -203,7 +203,7 @@
                                     <p class="text-xs font-semibold text-gray-900 mb-1">
                                         {{ $dokumen->jenis_dokumen ?? 'Lainnya' }}</p>
                                     <p class="text-xs text-gray-500 mb-2">{{ $dokumen->nama_file }}</p>
-                                    <span class="badge">{{ $dokumen->status_verifikasi ?? 'belum_diverifikasi' }}</span>
+                                    <x-badge :status="$dokumen->status_verifikasi ?? 'belum_diverifikasi'" />
                                 </div>
                             @endforeach
                         </div>

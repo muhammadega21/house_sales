@@ -11,10 +11,10 @@
             </div>
         </div>
 
-        <!-- Summary Cards Grid -->
+        <!-- Summary Cards -->
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <x-card>
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between gap-4">
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Total Pengguna</p>
                         <p class="mt-1 text-2xl font-bold text-gray-800">{{ $totalUsers }}</p>
@@ -22,19 +22,21 @@
                     <div class="rounded-lg bg-blue-50 p-3 text-blue-600">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M17 8a3 3 0 11-6 0 3 3 0 016 0zM7 8a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                     </div>
                 </div>
             </x-card>
 
             <x-card>
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between gap-4">
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Unit Tersedia</p>
-                        <p class="mt-1 text-2xl font-bold text-gray-800">{{ $totalUnitsAvailable }}</p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Unit Tersedia / Total Unit
+                        </p>
+                        <p class="mt-1 text-2xl font-bold text-gray-800">{{ $totalUnitsAvailable }} / {{ $totalUnits }}
+                        </p>
                     </div>
-                    <div class="rounded-lg bg-green-50 p-3 text-green-600">
+                    <div class="rounded-lg bg-emerald-50 p-3 text-emerald-600">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -44,28 +46,28 @@
             </x-card>
 
             <x-card>
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between gap-4">
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Total Booking</p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Total Booking Bulan Ini</p>
                         <p class="mt-1 text-2xl font-bold text-gray-800">{{ $totalBooking }}</p>
                     </div>
-                    <div class="rounded-lg bg-yellow-50 p-3 text-yellow-600">
+                    <div class="rounded-lg bg-amber-50 p-3 text-amber-600">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                     </div>
                 </div>
             </x-card>
 
             <x-card>
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between gap-4">
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Omset Penjualan</p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Total Omset Bulan Ini</p>
                         <p class="mt-1 text-2xl font-bold text-gray-800">Rp
                             {{ number_format($totalOmsetBulanIni, 0, ',', '.') }}</p>
                     </div>
-                    <div class="rounded-lg bg-indigo-50 p-3 text-indigo-600">
+                    <div class="rounded-lg bg-slate-50 p-3 text-slate-600">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -75,155 +77,143 @@
             </x-card>
         </div>
 
-        <!-- Prospek Perusahaan Section -->
-        <div class="space-y-6">
-            <h2 class="text-xl font-bold text-gray-800">Prospek Perusahaan</h2>
-
-            <!-- Summary Cards -->
-            <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
-                <x-card>
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Total Prospek (Bulan
-                                Ini)</p>
-                            <p class="mt-1 text-2xl font-bold text-gray-800">{{ $totalProspekBulanIni }}</p>
-                        </div>
-                        <div class="rounded-lg bg-blue-50 p-3 text-blue-600">
-                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                            </svg>
-                        </div>
-                    </div>
-                </x-card>
-
-                <x-card>
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Conversion Rate
-                                Perusahaan</p>
-                            <p class="mt-1 text-2xl font-bold text-gray-800">{{ $conversionRatePerusahaan }}%</p>
-                        </div>
-                        <div class="rounded-lg bg-green-50 p-3 text-green-600">
-                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                            </svg>
-                        </div>
-                    </div>
-                </x-card>
-
-                <x-card>
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Marketing Aktif</p>
-                            <p class="mt-1 text-2xl font-bold text-gray-800">
-                                {{ \App\Models\User::marketing()->aktif()->count() }}</p>
-                        </div>
-                        <div class="rounded-lg bg-indigo-50 p-3 text-indigo-600">
-                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
-                        </div>
-                    </div>
-                </x-card>
-            </div>
-
-            <!-- Bar Chart: Prospek per Marketing -->
-            <x-card>
-                <h2 class="text-lg font-semibold text-gray-800 mb-4">Prospek per Marketing (Bulan Ini)</h2>
-                <div class="flex items-center justify-center" style="height: 300px;">
-                    <canvas id="prospekPerMarketingChart"></canvas>
+        <!-- Widgets -->
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <x-card title="Conversion Rate Perusahaan" subtitle="Prospek menjadi closing bulan ini">
+                <div class="flex items-center justify-between">
+                    <p class="text-4xl font-bold text-gray-900">{{ $conversionRatePerusahaan }}%</p>
+                    <div class="rounded-full bg-emerald-100 px-4 py-2 text-sm font-semibold text-emerald-800">Baik</div>
                 </div>
             </x-card>
 
-            <!-- Top Marketing Tables -->
-            <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                <!-- Top by Prospek -->
-                <x-card>
-                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Top Marketing by Prospek</h2>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full text-sm">
-                            <thead>
-                                <tr class="border-b border-gray-200">
-                                    <th class="px-3 py-2 text-left text-xs font-semibold uppercase text-gray-500">#</th>
-                                    <th class="px-3 py-2 text-left text-xs font-semibold uppercase text-gray-500">Marketing
-                                    </th>
-                                    <th class="px-3 py-2 text-left text-xs font-semibold uppercase text-gray-500">Prospek
-                                    </th>
-                                    <th class="px-3 py-2 text-left text-xs font-semibold uppercase text-gray-500">Konversi
-                                    </th>
-                                    <th class="px-3 py-2 text-left text-xs font-semibold uppercase text-gray-500">Rate</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-100">
-                                @forelse($topMarketingByProspek as $i => $m)
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-500">{{ $i + 1 }}</td>
-                                        <td class="px-3 py-2 font-medium text-gray-800">{{ $m['nama_lengkap'] }}</td>
-                                        <td class="px-3 py-2 text-gray-600">{{ $m['total_prospek'] }}</td>
-                                        <td class="px-3 py-2 text-gray-600">{{ $m['konversi'] }}</td>
-                                        <td class="px-3 py-2">
-                                            <span
-                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                {{ $m['conversion_rate'] }}%
-                                            </span>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="5" class="px-3 py-4 text-center text-sm text-gray-400">Tidak ada
-                                            data</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </x-card>
+            <x-card title="Rata-rata Waktu Closing" subtitle="Rata-rata hari dari booking hingga akad">
+                <div class="flex items-center justify-between">
+                    <p class="text-4xl font-bold text-gray-900">{{ $averageClosingTime }} hari</p>
+                    <div class="rounded-full bg-blue-100 px-4 py-2 text-sm font-semibold text-blue-800">Stabil</div>
+                </div>
+            </x-card>
+        </div>
 
-                <!-- Top by Conversion Rate -->
-                <x-card>
-                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Top Marketing by Conversion Rate</h2>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full text-sm">
-                            <thead>
-                                <tr class="border-b border-gray-200">
-                                    <th class="px-3 py-2 text-left text-xs font-semibold uppercase text-gray-500">#</th>
-                                    <th class="px-3 py-2 text-left text-xs font-semibold uppercase text-gray-500">Marketing
-                                    </th>
-                                    <th class="px-3 py-2 text-left text-xs font-semibold uppercase text-gray-500">Prospek
-                                    </th>
-                                    <th class="px-3 py-2 text-left text-xs font-semibold uppercase text-gray-500">Konversi
-                                    </th>
-                                    <th class="px-3 py-2 text-left text-xs font-semibold uppercase text-gray-500">Rate</th>
+        <!-- Charts -->
+        <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+            <x-card title="Penjualan per Bulan">
+                <div class="h-72">
+                    <canvas id="penjualanPerBulanChart"></canvas>
+                </div>
+            </x-card>
+
+            <x-card title="Subsidi vs Non-Subsidi">
+                <div class="h-72">
+                    <canvas id="kategoriBreakdownChart"></canvas>
+                </div>
+            </x-card>
+
+            <x-card title="Tren Prospek vs Closing">
+                <div class="h-72">
+                    <canvas id="trenBulananChart"></canvas>
+                </div>
+            </x-card>
+        </div>
+
+        <!-- Tables -->
+        <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+            <x-card title="Top 5 Marketing">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="px-3 py-3 text-left text-xs font-semibold uppercase text-gray-500">#</th>
+                                <th class="px-3 py-3 text-left text-xs font-semibold uppercase text-gray-500">Marketing</th>
+                                <th class="px-3 py-3 text-left text-xs font-semibold uppercase text-gray-500">Closing</th>
+                                <th class="px-3 py-3 text-left text-xs font-semibold uppercase text-gray-500">Nilai</th>
+                                <th class="px-3 py-3 text-left text-xs font-semibold uppercase text-gray-500">Komisi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @forelse($topMarketing as $index => $marketing)
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-3 py-3 text-gray-500">{{ $index + 1 }}</td>
+                                    <td class="px-3 py-3 font-medium text-gray-800">{{ $marketing->nama_lengkap }}</td>
+                                    <td class="px-3 py-3 text-gray-600">{{ $marketing->total_closing }}</td>
+                                    <td class="px-3 py-3 text-gray-600">Rp
+                                        {{ number_format($marketing->total_nilai, 0, ',', '.') }}</td>
+                                    <td class="px-3 py-3 text-gray-600">Rp
+                                        {{ number_format($marketing->total_komisi, 0, ',', '.') }}</td>
                                 </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-100">
-                                @forelse($topMarketingByConversion as $i => $m)
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-500">{{ $i + 1 }}</td>
-                                        <td class="px-3 py-2 font-medium text-gray-800">{{ $m['nama_lengkap'] }}</td>
-                                        <td class="px-3 py-2 text-gray-600">{{ $m['total_prospek'] }}</td>
-                                        <td class="px-3 py-2 text-gray-600">{{ $m['konversi'] }}</td>
-                                        <td class="px-3 py-2">
-                                            <span
-                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                {{ $m['conversion_rate'] }}%
-                                            </span>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="5" class="px-3 py-4 text-center text-sm text-gray-400">Tidak ada
-                                            data</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </x-card>
-            </div>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="px-3 py-4 text-center text-sm text-gray-400">Tidak ada data
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </x-card>
+
+            <x-card title="Booking Terbaru">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="px-3 py-3 text-left text-xs font-semibold uppercase text-gray-500">Kode</th>
+                                <th class="px-3 py-3 text-left text-xs font-semibold uppercase text-gray-500">Konsumen</th>
+                                <th class="px-3 py-3 text-left text-xs font-semibold uppercase text-gray-500">Tanggal
+                                    Booking</th>
+                                <th class="px-3 py-3 text-left text-xs font-semibold uppercase text-gray-500">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @forelse($latestBookings as $booking)
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-3 py-3 text-gray-600">{{ $booking->kode_booking }}</td>
+                                    <td class="px-3 py-3 text-gray-800">{{ $booking->nama_konsumen ?? '-' }}</td>
+                                    <td class="px-3 py-3 text-gray-600">
+                                        {{ optional($booking->tanggal_booking)->format('d M Y') ?? '-' }}</td>
+                                    <td class="px-3 py-3">
+                                        <x-badge :status="$booking->status_penjualan ?? 'booking'" />
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="4" class="px-3 py-4 text-center text-sm text-gray-400">Tidak ada
+                                        booking terbaru</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </x-card>
+
+            <x-card title="Unit Tersedia per Perumahan">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="px-3 py-3 text-left text-xs font-semibold uppercase text-gray-500">Perumahan
+                                </th>
+                                <th class="px-3 py-3 text-left text-xs font-semibold uppercase text-gray-500">Tersedia</th>
+                                <th class="px-3 py-3 text-left text-xs font-semibold uppercase text-gray-500">Total Unit
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @forelse($unitsAvailableByPerumahan as $unit)
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-3 py-3 text-gray-800">{{ $unit->nama_perumahan }}</td>
+                                    <td class="px-3 py-3 text-gray-600">{{ $unit->tersedia }}</td>
+                                    <td class="px-3 py-3 text-gray-600">{{ $unit->total_unit }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="3" class="px-3 py-4 text-center text-sm text-gray-400">Tidak ada data
+                                        unit</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </x-card>
         </div>
     </div>
 
@@ -231,79 +221,146 @@
         <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                const ctx = document.getElementById('prospekPerMarketingChart');
-                if (!ctx) return;
+                const penjualanPerBulan = @json($penjualanPerBulan);
+                const kategoriBreakdown = @json($kategoriBreakdown);
+                const trenBulanan = @json($trenBulanan);
 
-                const data = @json($prospekPerMarketing);
-                const labels = data.map(d => d.nama_lengkap);
-                const prospekData = data.map(d => d.total_prospek);
-                const konversiData = data.map(d => d.konversi);
-
-                new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                                label: 'Prospek',
-                                data: prospekData,
+                const barCtx = document.getElementById('penjualanPerBulanChart');
+                if (barCtx) {
+                    new Chart(barCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: penjualanPerBulan.map(item => item.label),
+                            datasets: [{
+                                label: 'Total Omset',
+                                data: penjualanPerBulan.map(item => item.total),
                                 backgroundColor: '#2563EB',
-                                borderRadius: 4,
-                                barPercentage: 0.6,
-                                categoryPercentage: 0.7
-                            },
-                            {
-                                label: 'Konversi',
-                                data: konversiData,
-                                backgroundColor: '#10B981',
-                                borderRadius: 4,
-                                barPercentage: 0.6,
-                                categoryPercentage: 0.7
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    stepSize: 1,
-                                    font: {
-                                        size: 11
+                                borderRadius: 12,
+                                maxBarThickness: 32,
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: value => new Intl.NumberFormat('id-ID', {
+                                            style: 'currency',
+                                            currency: 'IDR',
+                                            maximumFractionDigits: 0
+                                        }).format(value),
+                                        color: '#4B5563',
+                                    },
+                                    grid: {
+                                        color: 'rgba(15, 23, 42, 0.05)',
                                     }
                                 },
-                                grid: {
-                                    color: 'rgba(0,0,0,0.05)'
+                                x: {
+                                    ticks: {
+                                        color: '#374151',
+                                    },
+                                    grid: {
+                                        display: false
+                                    }
                                 }
                             },
-                            x: {
-                                ticks: {
-                                    font: {
-                                        size: 10
-                                    },
-                                    maxRotation: 45
-                                },
-                                grid: {
+                            plugins: {
+                                legend: {
                                     display: false
                                 }
                             }
+                        }
+                    });
+                }
+
+                const pieCtx = document.getElementById('kategoriBreakdownChart');
+                if (pieCtx) {
+                    new Chart(pieCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Subsidi', 'Non-Subsidi'],
+                            datasets: [{
+                                data: [kategoriBreakdown.subsidi.total_nilai, kategoriBreakdown
+                                    .non_subsidi.total_nilai
+                                ],
+                                backgroundColor: ['#10B981', '#2563EB'],
+                                borderWidth: 0,
+                            }]
                         },
-                        plugins: {
-                            legend: {
-                                position: 'bottom',
-                                labels: {
-                                    padding: 16,
-                                    usePointStyle: true,
-                                    pointStyleWidth: 10,
-                                    font: {
-                                        size: 11
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        color: '#374151'
                                     }
                                 }
                             }
                         }
-                    }
-                });
+                    });
+                }
+
+                const lineCtx = document.getElementById('trenBulananChart');
+                if (lineCtx) {
+                    new Chart(lineCtx, {
+                        type: 'line',
+                        data: {
+                            labels: trenBulanan.map(item => item.label),
+                            datasets: [{
+                                    label: 'Prospek',
+                                    data: trenBulanan.map(item => item.prospek),
+                                    borderColor: '#2563EB',
+                                    backgroundColor: 'rgba(37, 99, 235, 0.15)',
+                                    fill: true,
+                                    tension: 0.3,
+                                },
+                                {
+                                    label: 'Closing',
+                                    data: trenBulanan.map(item => item.closing),
+                                    borderColor: '#10B981',
+                                    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                                    fill: true,
+                                    tension: 0.3,
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        color: '#374151'
+                                    },
+                                    grid: {
+                                        color: 'rgba(15, 23, 42, 0.05)'
+                                    }
+                                },
+                                x: {
+                                    ticks: {
+                                        color: '#374151'
+                                    },
+                                    grid: {
+                                        display: false
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        color: '#374151'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
             });
         </script>
     @endpush
