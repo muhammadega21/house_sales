@@ -16,7 +16,7 @@
             <x-card>
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Total Prospek</p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Total Prospek Bulan Ini</p>
                         <p class="mt-1 text-2xl font-bold text-gray-800">{{ $totalProspekBulanIni }}</p>
                         <p class="text-xs text-gray-400">Bulan ini</p>
                     </div>
@@ -64,7 +64,7 @@
             <x-card>
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Konversi</p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Konversi Bulan Ini</p>
                         <p class="mt-1 text-2xl font-bold text-gray-800">{{ $konversiBulanIni }}</p>
                         <p class="text-xs text-gray-400">Menjadi konsumen</p>
                     </div>
@@ -94,8 +94,8 @@
             </x-card>
         </div>
 
-        <!-- Pipeline + Charts Row -->
-        <div class="grid grid-cols-1 gap-6 lg:grid-cols-5">
+        <!-- Pipeline + Target Row -->
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
             <!-- Pipeline/Funnel -->
             <div class="lg:col-span-2">
                 <x-card>
@@ -106,31 +106,31 @@
                                 [
                                     'label' => 'Baru',
                                     'count' => $stats['baru'] ?? 0,
-                                    'color' => 'bg-gray-400',
+                                    'bg' => '#9CA3AF',
                                     'href' => route('marketing.prospek.index', ['status' => 'baru']),
                                 ],
                                 [
                                     'label' => 'Dihubungi',
                                     'count' => $stats['dihubungi'] ?? 0,
-                                    'color' => 'bg-blue-400',
+                                    'bg' => '#60A5FA',
                                     'href' => route('marketing.prospek.index', ['status' => 'dihubungi']),
                                 ],
                                 [
                                     'label' => 'Berminat',
                                     'count' => $stats['berminat'] ?? 0,
-                                    'color' => 'bg-primary',
+                                    'bg' => '#2563EB',
                                     'href' => route('marketing.prospek.index', ['status' => 'berminat']),
                                 ],
                                 [
                                     'label' => 'Tidak Berminat',
                                     'count' => $stats['tidak_berminat'] ?? 0,
-                                    'color' => 'bg-red-400',
+                                    'bg' => '#EF4444',
                                     'href' => route('marketing.prospek.index', ['status' => 'tidak_berminat']),
                                 ],
                                 [
                                     'label' => 'Jadi Konsumen',
                                     'count' => $stats['jadi_konsumen'] ?? 0,
-                                    'color' => 'bg-green-500',
+                                    'bg' => '#10B981',
                                     'href' => route('marketing.konsumen.index'),
                                 ],
                             ];
@@ -143,8 +143,8 @@
                                     <span class="text-sm font-bold text-gray-800">{{ $item['count'] }}</span>
                                 </div>
                                 <div class="h-6 w-full rounded-full bg-gray-100 overflow-hidden">
-                                    <div class="h-full rounded-full {{ $item['color'] }} transition-all duration-300 group-hover:opacity-80"
-                                        style="width: {{ max(($item['count'] / $maxCount) * 100, $item['count'] > 0 ? 8 : 0) }}%">
+                                    <div class="h-full rounded-full transition-all duration-300 group-hover:opacity-80"
+                                        style="width: {{ max(($item['count'] / $maxCount) * 100, $item['count'] > 0 ? 8 : 0) }}%; background-color: {{ $item['bg'] }};">
                                     </div>
                                 </div>
                             </a>
@@ -153,24 +153,53 @@
                 </x-card>
             </div>
 
-            <!-- Charts Column -->
-            <div class="lg:col-span-3 space-y-6">
-                <!-- Pie Chart: Prospek per Sumber -->
+            <!-- Target & Komisi -->
+            <div class="lg:col-span-1">
                 <x-card>
-                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Prospek per Sumber</h2>
-                    <div class="flex items-center justify-center" style="height: 220px;">
-                        <canvas id="prospekPerSumberChart"></canvas>
-                    </div>
-                </x-card>
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Target & Komisi</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-sm font-medium text-gray-700">Pencapaian Target Bulan Ini</span>
+                                <span class="text-sm font-bold text-gray-800">{{ $pencapaianTarget }}%</span>
+                            </div>
+                            <div class="h-4 w-full rounded-full bg-gray-100 overflow-hidden">
+                                <div class="h-full rounded-full transition-all duration-300"
+                                    style="width: {{ min($pencapaianTarget, 100) }}%; background-color: {{ $pencapaianTarget >= 100 ? '#10B981' : ($pencapaianTarget >= 50 ? '#F59E0B' : '#EF4444') }};">
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-1">{{ $realisasiUnit }} dari {{ $targetUnit }} unit</p>
+                        </div>
 
-                <!-- Line Chart: Prospek per Bulan -->
-                <x-card>
-                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Tren Prospek & Konversi (6 Bulan)</h2>
-                    <div class="flex items-center justify-center" style="height: 220px;">
-                        <canvas id="prospekPerBulanChart"></canvas>
+                        <div class="border-t border-gray-100 pt-4">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-gray-700">Total Komisi Bulan Ini</span>
+                                <span class="text-lg font-bold text-green-600">Rp {{ number_format($totalKomisi, 0, ',', '.') }}</span>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-1">Dari {{ $realisasiUnit }} unit terjual</p>
+                        </div>
                     </div>
                 </x-card>
             </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <!-- Pie Chart: Prospek per Sumber -->
+            <x-card>
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">Prospek per Sumber</h2>
+                <div class="flex items-center justify-center" style="height: 220px;">
+                    <canvas id="prospekPerSumberChart"></canvas>
+                </div>
+            </x-card>
+
+            <!-- Line Chart: Tren prospek vs konversi -->
+            <x-card>
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">Tren Prospek vs Konversi (6 Bulan)</h2>
+                <div class="flex items-center justify-center" style="height: 220px;">
+                    <canvas id="prospekPerBulanChart"></canvas>
+                </div>
+            </x-card>
         </div>
 
         <!-- Tables Row -->
@@ -308,7 +337,7 @@
                     });
                 }
 
-                // Line Chart: Prospek per Bulan
+                // Line Chart: Prospek vs Konversi (6 Bulan)
                 const bulanCtx = document.getElementById('prospekPerBulanChart');
                 if (bulanCtx) {
                     const bulanData = @json($dataBulan);

@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Marketing;
 use App\Enums\StatusProspek;
 use App\Http\Controllers\Controller;
 use App\Models\Konsumen;
+use App\Models\MarketingTarget;
 use App\Models\Prospek;
 use App\Services\ProspekService;
 use Illuminate\Http\Request;
@@ -98,6 +99,19 @@ final class DashboardController extends Controller
             ->limit(5)
             ->get();
 
+        $target = MarketingTarget::where([
+            'id_marketing' => $idMarketing,
+            'periode_bulan' => now()->month,
+            'periode_tahun' => now()->year,
+        ])->first();
+
+        $targetUnit = (int) ($target?->target_unit ?? 0);
+        $realisasiUnit = (int) ($target?->realisasi_unit ?? 0);
+        $totalKomisi = (float) ($target?->total_komisi ?? 0);
+        $pencapaianTarget = $targetUnit > 0
+            ? round(($realisasiUnit / $targetUnit) * 100, 1)
+            : 0;
+
         return view('marketing.dashboard', array_merge(
             compact(
                 'stats',
@@ -109,7 +123,11 @@ final class DashboardController extends Controller
                 'prospekPerSumber',
                 'dataBulan',
                 'prospekTerbaru',
-                'konsumenTerbaru'
+                'konsumenTerbaru',
+                'targetUnit',
+                'realisasiUnit',
+                'totalKomisi',
+                'pencapaianTarget'
             ),
             ['activeTab' => 'dashboard']
         ));

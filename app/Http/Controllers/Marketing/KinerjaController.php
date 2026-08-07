@@ -19,15 +19,24 @@ final class KinerjaController extends Controller
         $request->validate([
             'periode_mulai'   => ['nullable', 'date'],
             'periode_selesai' => ['nullable', 'date', 'after_or_equal:periode_mulai'],
+            'bulan'           => ['nullable', 'integer', 'min:1', 'max:12'],
+            'tahun'           => ['nullable', 'integer', 'min:2000', 'max:2099'],
         ]);
 
-        $start = $request->input('periode_mulai')
-            ? Carbon::parse($request->input('periode_mulai'))->startOfDay()
-            : Carbon::now()->startOfMonth();
+        if ($request->filled('bulan') && $request->filled('tahun')) {
+            $bulan = (int) $request->input('bulan');
+            $tahun = (int) $request->input('tahun');
+            $start = Carbon::createFromDate($tahun, $bulan, 1)->startOfMonth();
+            $end = $start->copy()->endOfMonth();
+        } else {
+            $start = $request->input('periode_mulai')
+                ? Carbon::parse($request->input('periode_mulai'))->startOfDay()
+                : Carbon::now()->startOfMonth();
 
-        $end = $request->input('periode_selesai')
-            ? Carbon::parse($request->input('periode_selesai'))->endOfDay()
-            : Carbon::now()->endOfMonth();
+            $end = $request->input('periode_selesai')
+                ? Carbon::parse($request->input('periode_selesai'))->endOfDay()
+                : Carbon::now()->endOfMonth();
+        }
 
         $totalProspek = DB::table('prospek')
             ->where('id_marketing', $idMarketing)
@@ -39,13 +48,18 @@ final class KinerjaController extends Controller
             ->whereBetween('tanggal_booking', [$start->toDateString(), $end->toDateString()])
             ->count();
 
-        $closingRows = DB::table('status_penjualan as sp')
+        $closingQuery = DB::table('status_penjualan as sp')
             ->join('booking as b', 'b.id', '=', 'sp.id_booking')
             ->join('unit_rumah as u', 'u.id', '=', 'sp.id_unit')
             ->join('konsumen as k', 'k.id', '=', 'b.id_konsumen')
             ->where('b.id_marketing', $idMarketing)
             ->where('sp.status_saat_ini', 'akad')
-            ->whereBetween('sp.tanggal_perubahan', [$start->toDateString(), $end->toDateString()])
+            ->whereBetween('sp.tanggal_perubahan', [$start->toDateString(), $end->toDateString()]);
+
+        $totalClosing = $closingQuery->count();
+        $totalNilaiPenjualan = (float) $closingQuery->sum('u.harga_jual');
+
+        $closingRows = $closingQuery
             ->select([
                 'sp.id as id_status',
                 'sp.tanggal_perubahan',
@@ -56,10 +70,8 @@ final class KinerjaController extends Controller
                 'u.harga_jual',
             ])
             ->orderByDesc('sp.tanggal_perubahan')
-            ->get();
-
-        $totalClosing = $closingRows->count();
-        $totalNilaiPenjualan = (float) $closingRows->sum('harga_jual');
+            ->paginate(10)
+            ->withQueryString();
 
         $user = $request->user();
         $persentaseKomisi = $user?->persentase_komisi ?? 0;
@@ -140,6 +152,7 @@ final class KinerjaController extends Controller
             'totalClosing',
             'conversionRate',
             'totalKomisi',
+            'persentaseKomisi',
             'targetUnit',
             'progressTarget',
             'chartLabels',
