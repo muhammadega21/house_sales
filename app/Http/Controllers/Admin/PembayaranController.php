@@ -33,16 +33,12 @@ final class PembayaranController extends Controller
         if ($search !== '') {
             $term = '%' . $search . '%';
             $query->where(function ($q) use ($term) {
-                $q->where('no_referensi', 'like', $term)
-                    ->orWhereHas('booking', function ($q) use ($term) {
-                        $q->where('kode_booking', 'like', $term)
-                            ->orWhereHas('konsumen', function ($q) use ($term) {
-                                $q->where('nama_lengkap', 'like', $term);
-                            })
-                            ->orWhereHas('marketing', function ($q) use ($term) {
-                                $q->where('nama_lengkap', 'like', $term);
-                            });
-                    });
+                $q->whereHas('booking', function ($q) use ($term) {
+                    $q->where('kode_booking', 'like', $term)
+                        ->orWhereHas('konsumen', function ($q) use ($term) {
+                            $q->where('nama_lengkap', 'like', $term);
+                        });
+                });
             });
         }
 
@@ -66,10 +62,6 @@ final class PembayaranController extends Controller
             $query->where('tanggal_bayar', '>=', $filterTanggalFrom);
         } elseif ($filterTanggalTo !== '') {
             $query->where('tanggal_bayar', '<=', $filterTanggalTo);
-        }
-
-        if ($filterStatus === '') {
-            $query->where('status_verifikasi', \App\Enums\StatusVerifikasi::Pending->value);
         }
 
         $pembayarans = $query->orderByDesc('created_at')->paginate($perPage)->withQueryString();
