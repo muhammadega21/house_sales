@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class LaporanService
 {
@@ -663,9 +662,9 @@ class LaporanService
      *
      * @param  array<string, mixed> $filters
      * @param  string $role ('admin'|'manajemen')
-     * @return StreamedResponse
+     * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function exportLaporanPenjualanPdf(array $filters, string $role = 'admin'): StreamedResponse
+    public function exportLaporanPenjualanPdf(array $filters, string $role = 'admin'): \Symfony\Component\HttpFoundation\Response
     {
         $data      = $this->getLaporanPenjualan($filters);
         $view      = $role === 'manajemen'

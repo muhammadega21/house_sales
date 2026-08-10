@@ -1,14 +1,18 @@
 @extends('layouts.app')
 
-@section('title', 'Simulasi Pembayaran Admin')
+@section('title', 'Simulasi Pembayaran')
 
 @section('content')
     <div class="space-y-6">
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-2xl font-bold text-gray-800">Simulasi Pembayaran</h1>
-                <p class="text-sm text-gray-500">Hitung estimasi cicilan unit rumah sebagai admin.</p>
+                <p class="text-sm text-gray-500">Gunakan kalkulator untuk membandingkan estimasi cicilan unit rumah.</p>
             </div>
+            <a href="{{ route('admin.dashboard') }}"
+                class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50">
+                Kembali ke Dashboard
+            </a>
         </div>
 
         <x-card>
@@ -29,12 +33,6 @@
             </div>
         </x-card>
 
-        <x-simulasi-form :units="$units" :hitung-url="route('admin.simulasi.hitung')" :show-save-button="false" :show-export-button="false" :show-comparison-button="false" />
+        <x-simulasi-form :units="$units" :konsumen-list="$konsumenOptions" :default-bunga="(float) ($settings['default_kpr_bunga'] ?? 8)" :default-diskon="(float) ($settings['default_cash_keras_diskon'] ?? 0)" :dp-limits="$dpLimits" :hitung-url="route('admin.simulasi.hitung')" />
     </div>
 @endsection
-
-@push('scripts')
-    <script>
-        // No inline admin simulasi script required; shared component handles behavior.
-    </script>
-@endpush

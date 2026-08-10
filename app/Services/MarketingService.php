@@ -69,7 +69,6 @@ class MarketingService extends BaseService
         $closingRows = (clone $status)
             ->where('status_saat_ini', 'akad')
             ->join('unit_rumah', 'unit_rumah.id', '=', 'status_penjualan.id_unit')
-            ->join('booking', 'booking.id', '=', 'status_penjualan.id_booking')
             ->leftJoin('konsumen', 'konsumen.id', '=', 'booking.id_konsumen')
             ->select('unit_rumah.harga_jual', 'booking.id_konsumen', 'konsumen.nama_lengkap as nama_konsumen', 'unit_rumah.kode_unit', 'status_penjualan.tanggal_perubahan')
             ->get();

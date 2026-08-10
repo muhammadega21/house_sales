@@ -41,9 +41,14 @@
         :filtered="$prospeks->total()"
         :search="$search"
         :has-filters="$hasFilters"
-        :exclude-keys="['status_prospek', 'sumber_prospek', 'id_marketing']"
+        :exclude-keys="['status_prospek', 'sumber_prospek', 'id_marketing', 'show_converted']"
     >
         <x-slot:filters>
+            <label class="flex items-center gap-2 text-sm text-gray-700">
+                <input type="checkbox" name="show_converted" value="1" {{ request('show_converted') ? 'checked' : '' }}
+                    class="rounded border-gray-300 text-primary focus:ring-primary">
+                Tampilkan yang sudah jadi konsumen
+            </label>
             <div class="min-w-[140px]">
                 <label for="status_prospek" class="mb-1 block text-sm font-medium text-gray-700">Status</label>
                 <select name="status_prospek" id="status_prospek" onchange="this.closest('form').submit()"
@@ -137,12 +142,16 @@
                                     <a href="{{ route('admin.prospek.show', $prospek->id) }}" class="font-semibold text-info transition hover:text-indigo-800" title="Detail">
                                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                                     </a>
-                                    <a href="{{ route('admin.prospek.edit', $prospek->id) }}" class="font-semibold text-primary transition hover:text-primary-dark" title="Edit">
-                                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                                    </a>
-                                    <a href="{{ route('admin.prospek.convert', $prospek->id) }}" class="font-semibold text-emerald-600 transition hover:text-emerald-800" title="Konversi">
-                                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13l-5 5m0 0l-5-5m5 5V6" /></svg>
-                                    </a>
+                                    @if($prospek->status_prospek->value !== 'jadi_konsumen')
+                                        <a href="{{ route('admin.prospek.edit', $prospek->id) }}" class="font-semibold text-primary transition hover:text-primary-dark" title="Edit">
+                                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                        </a>
+                                    @endif
+                                    @if($prospek->status_prospek->value !== 'jadi_konsumen')
+                                        <a href="{{ route('admin.prospek.convert', $prospek->id) }}" class="font-semibold text-emerald-600 transition hover:text-emerald-800" title="Konversi">
+                                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13l-5 5m0 0l-5-5m5 5V6" /></svg>
+                                        </a>
+                                    @endif
                                     @if($prospek->status_prospek->value !== 'jadi_konsumen')
                                         <x-confirm-delete :route="route('admin.prospek.destroy', $prospek->id)" :item-name="$prospek->nama_prospek" />
                                     @endif

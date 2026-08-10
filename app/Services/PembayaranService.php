@@ -31,6 +31,12 @@ class PembayaranService extends BaseService
                 abort(403, 'Anda tidak memiliki akses untuk menginput pembayaran pada booking ini.');
             }
 
+            $sisaTagihan = $this->getSisaTagihan($booking->id);
+
+            if ($sisaTagihan <= 0) {
+                abort(422, 'Tagihan untuk booking ini sudah sepenuhnya lunas. Tidak dapat menambahkan pembayaran.');
+            }
+
             if (! isset($data['bukti_bayar']) || ! $data['bukti_bayar']) {
                 throw ValidationException::withMessages([
                     'bukti_bayar' => 'Bukti pembayaran wajib diupload (BR-18).',

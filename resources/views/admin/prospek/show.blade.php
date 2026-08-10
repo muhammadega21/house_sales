@@ -22,13 +22,15 @@
                 </svg>
                 Edit
             </a>
-            <a href="{{ route('admin.prospek.convert', $prospek->id) }}"
-               class="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700">
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13l-5 5m0 0l-5-5m5 5V6" />
-                </svg>
-                Konversi
-            </a>
+            @if($prospek->status_prospek->value !== 'jadi_konsumen')
+                <a href="{{ route('admin.prospek.convert', $prospek->id) }}"
+                   class="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13l-5 5m0 0l-5-5m5 5V6" />
+                    </svg>
+                    Konversi
+                </a>
+            @endif
             @if($prospek->status_prospek->value !== 'jadi_konsumen')
                 <x-confirm-delete :route="route('admin.prospek.destroy', $prospek->id)" :item-name="$prospek->nama_prospek" />
             @endif

@@ -93,6 +93,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     // Simulasi Pembayaran
     Route::get('/simulasi', [Admin\SimulasiController::class, 'index'])->name('simulasi.index');
     Route::post('/simulasi/hitung', [Admin\SimulasiController::class, 'hitung'])->name('simulasi.hitung');
+    Route::post('/simulasi/simpan', [Admin\SimulasiController::class, 'simpan'])->name('simulasi.simpan');
+    Route::get('/simulasi/perbandingan', [Admin\SimulasiController::class, 'perbandingan'])->name('simulasi.perbandingan');
+    Route::get('/simulasi/export-pdf', [Admin\SimulasiController::class, 'exportPdf'])->name('simulasi.export-pdf');
 
     // Laporan
     Route::get('/laporan/penjualan', [Admin\LaporanController::class, 'penjualan'])->name('laporan.penjualan');

@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProspekRequest;
 use App\Models\Prospek;
+use App\Enums\StatusProspek;
 use App\Services\ProspekService;
 use App\Traits\HasDataTable;
 use Illuminate\Http\JsonResponse;
@@ -35,6 +36,11 @@ final class ProspekController extends Controller
     public function index(Request $request): View
     {
         $query = Prospek::query()->with('marketing');
+
+        $query->when(!$request->has('show_converted'), function ($q) {
+            $q->where('status_prospek', '!=', 'jadi_konsumen');
+        });
+
         $prospeks = $this->buildDataTableQuery($query, $request);
         $stats = $this->prospekService->getAllStats();
         $meta = $this->dataTableMeta($request);
@@ -67,6 +73,10 @@ final class ProspekController extends Controller
     public function edit(int $id): View
     {
         $prospek = $this->prospekService->findById(Prospek::class, $id);
+
+        if ($prospek->status_prospek === StatusProspek::JadiKonsumen->value) {
+            abort(403, 'Prospek ini sudah dikonversi menjadi konsumen dan tidak dapat diedit.');
+        }
 
         $this->authorize('update', $prospek);
 

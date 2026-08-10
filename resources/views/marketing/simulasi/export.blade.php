@@ -115,7 +115,7 @@
                 </tr>
                 <tr>
                     <th>Perumahan</th>
-                    <td>{{ $unit->perumahan->nama_perumahan ?? '-' }}</td>
+                    <td>{{ $unit->perumahan?->nama_perumahan ?? '-' }}</td>
                 </tr>
             </table>
         </div>

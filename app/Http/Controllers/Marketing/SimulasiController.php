@@ -83,7 +83,7 @@ final class SimulasiController extends Controller
         ]);
     }
 
-    public function simpan(SimulasiRequest $request): RedirectResponse
+    public function simpan(SimulasiRequest $request): JsonResponse|RedirectResponse
     {
         $validated = $request->validated();
         $hargaRumah = $this->simulasiService->getUnitHarga((int) $validated['id_unit']);
@@ -123,7 +123,7 @@ final class SimulasiController extends Controller
         $validated = $request->validate([
             'id_unit' => ['required', 'integer', 'exists:unit_rumah,id'],
             'dp_persen' => ['required', 'numeric', 'min:0', 'max:100'],
-            'tenor_tahun' => ['required', 'integer', 'min:1', 'max:30'],
+            'tenor_tahun' => ['nullable', 'integer', 'min:1', 'max:30'],
             'suku_bunga' => ['nullable', 'numeric', 'min:0', 'max:50'],
             'diskon_persen' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'id_konsumen' => ['nullable', 'integer', 'exists:konsumen,id'],
@@ -131,22 +131,25 @@ final class SimulasiController extends Controller
 
         $unit = UnitRumah::with('perumahan')->findOrFail($validated['id_unit']);
         $konsumen = isset($validated['id_konsumen']) ? Konsumen::find($validated['id_konsumen']) : null;
+        $hargaJual = (float) $unit->harga_jual;
+        $tenorTahun = max(1, (int) ($validated['tenor_tahun'] ?? 15));
+        $sukuBunga = (float) ($validated['suku_bunga'] ?? 8);
 
         $hasilKpr = $this->simulasiService->hitungKpr(
-            $unit->harga_jual,
+            $hargaJual,
             (float) $validated['dp_persen'],
-            (int) $validated['tenor_tahun'],
-            (float) ($validated['suku_bunga'] ?? 0)
+            $tenorTahun,
+            $sukuBunga
         );
 
         $hasilCashBertahap = $this->simulasiService->hitungCashBertahap(
-            $unit->harga_jual,
+            $hargaJual,
             (float) $validated['dp_persen'],
-            (int) $validated['tenor_tahun']
+            $tenorTahun
         );
 
         $hasilCashKeras = $this->simulasiService->hitungCashKeras(
-            $unit->harga_jual,
+            $hargaJual,
             (float) ($validated['diskon_persen'] ?? 0)
         );
 
@@ -158,7 +161,7 @@ final class SimulasiController extends Controller
         $validated = $request->validate([
             'id_unit' => ['required', 'integer', 'exists:unit_rumah,id'],
             'dp_persen' => ['required', 'numeric', 'min:0', 'max:100'],
-            'tenor_tahun' => ['required', 'integer', 'min:1', 'max:30'],
+            'tenor_tahun' => ['nullable', 'integer', 'min:1', 'max:30'],
             'suku_bunga' => ['nullable', 'numeric', 'min:0', 'max:50'],
             'diskon_persen' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'id_konsumen' => ['nullable', 'integer', 'exists:konsumen,id'],
@@ -166,22 +169,25 @@ final class SimulasiController extends Controller
 
         $unit = UnitRumah::with('perumahan')->findOrFail($validated['id_unit']);
         $konsumen = isset($validated['id_konsumen']) ? Konsumen::find($validated['id_konsumen']) : null;
+        $hargaJual = (float) $unit->harga_jual;
+        $tenorTahun = max(1, (int) ($validated['tenor_tahun'] ?? 15));
+        $sukuBunga = (float) ($validated['suku_bunga'] ?? 8);
 
         $hasilKpr = $this->simulasiService->hitungKpr(
-            $unit->harga_jual,
+            $hargaJual,
             (float) $validated['dp_persen'],
-            (int) $validated['tenor_tahun'],
-            (float) ($validated['suku_bunga'] ?? 0)
+            $tenorTahun,
+            $sukuBunga
         );
 
         $hasilCashBertahap = $this->simulasiService->hitungCashBertahap(
-            $unit->harga_jual,
+            $hargaJual,
             (float) $validated['dp_persen'],
-            (int) $validated['tenor_tahun']
+            $tenorTahun
         );
 
         $hasilCashKeras = $this->simulasiService->hitungCashKeras(
-            $unit->harga_jual,
+            $hargaJual,
             (float) ($validated['diskon_persen'] ?? 0)
         );
 

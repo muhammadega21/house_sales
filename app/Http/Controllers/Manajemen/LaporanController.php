@@ -12,7 +12,6 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class LaporanController extends Controller
 {
@@ -126,9 +125,9 @@ final class LaporanController extends Controller
      * Export laporan penjualan ke PDF untuk manajemen.
      *
      * @param  Request $request
-     * @return StreamedResponse
+     * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function exportPdf(Request $request): StreamedResponse
+    public function exportPdf(Request $request): \Symfony\Component\HttpFoundation\Response
     {
         $request->validate([
             'periode_mulai'   => ['nullable', 'date'],

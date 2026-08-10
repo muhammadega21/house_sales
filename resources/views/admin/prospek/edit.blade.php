@@ -2,6 +2,20 @@
 
 @section('content')
 <div class="space-y-6">
+    @if($prospek->status_prospek->value === 'jadi_konsumen')
+        <x-card>
+            <div class="text-center py-10">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a2 2 0 00-2-2H6a2 2 0 00-2 2v2m16 0H6" />
+                </svg>
+                <h3 class="mt-4 text-lg font-semibold text-gray-900">Prospek sudah dikonversi</h3>
+                <p class="mt-2 text-sm text-gray-500">Prospek ini sudah menjadi konsumen dan tidak dapat diedit lagi.</p>
+                <a href="{{ route('admin.prospek.index') }}" class="mt-6 inline-flex items-center rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark">
+                    Kembali ke Daftar Prospek
+                </a>
+            </div>
+        </x-card>
+    @else
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-2xl font-bold text-gray-900">Edit Prospek</h1>
@@ -41,5 +55,6 @@
             </div>
         </form>
     </x-card>
+    @endif
 </div>
 @endsection

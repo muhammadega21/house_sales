@@ -466,9 +466,18 @@
                                 const params = new URLSearchParams();
                                 params.set('id_unit', this.unitId);
                                 params.set('dp_persen', this.dpPersen);
-                                params.set('tenor_tahun', this.tenor);
-                                params.set('suku_bunga', this.bunga);
-                                params.set('diskon_persen', this.diskon);
+
+                                if (this.metode === 'kpr' || this.metode === 'cash_bertahap') {
+                                    params.set('tenor_tahun', this.tenor);
+                                }
+
+                                if (this.metode === 'kpr') {
+                                    params.set('suku_bunga', this.bunga);
+                                }
+
+                                if (this.metode === 'cash_keras') {
+                                    params.set('diskon_persen', this.diskon);
+                                }
 
                                 if (this.konsumenId) {
                                     params.set('id_konsumen', this.konsumenId);

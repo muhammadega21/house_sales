@@ -50,6 +50,20 @@ final class KonsumenController extends Controller
         ));
     }
 
+    public function create(): View
+    {
+        return view('admin.konsumen.create');
+    }
+
+    public function store(KonsumenRequest $request): RedirectResponse
+    {
+        $this->konsumenService->create($request->validated());
+
+        return redirect()
+            ->route('admin.konsumen.index')
+            ->with('success', 'Konsumen berhasil ditambahkan.');
+    }
+
     public function show(int $id): View
     {
         $konsumen = $this->konsumenService->getDetail($id);

@@ -5,14 +5,17 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Konsumen;
+use App\Models\Prospek;
 use App\Services\LaporanService;
+use App\Services\ProspekService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 final class DashboardController extends Controller
 {
-    public function __construct(private readonly LaporanService $laporanService) {}
+    public function __construct(private readonly LaporanService $laporanService, private readonly ProspekService $prospekService) {}
 
     public function index(Request $request): View
     {
@@ -112,6 +115,28 @@ final class DashboardController extends Controller
             ->orderBy('p.nama_perumahan')
             ->get();
 
+        $prospekStats = $this->prospekService->getAllStats();
+        $totalProspekBulanIni = DB::table('prospek')
+            ->where('tanggal_prospek', '>=', $bulanIni)
+            ->count();
+        $konversiBulanIni = DB::table('prospek')
+            ->where('status_prospek', 'jadi_konsumen')
+            ->where('tanggal_prospek', '>=', $bulanIni)
+            ->count();
+        $conversionRate = $totalProspekBulanIni > 0
+            ? round(($konversiBulanIni / $totalProspekBulanIni) * 100, 1)
+            : 0;
+
+        $prospekTerbaru = Prospek::query()
+            ->orderByDesc('tanggal_prospek')
+            ->limit(5)
+            ->get();
+
+        $konsumenTerbaru = Konsumen::query()
+            ->orderByDesc('created_at')
+            ->limit(5)
+            ->get();
+
         return view('admin.dashboard', array_merge(
             compact(
                 'totalUsers',
@@ -126,7 +151,13 @@ final class DashboardController extends Controller
                 'trenBulanan',
                 'topMarketing',
                 'latestBookings',
-                'unitsAvailableByPerumahan'
+                'unitsAvailableByPerumahan',
+                'prospekStats',
+                'totalProspekBulanIni',
+                'konversiBulanIni',
+                'conversionRate',
+                'prospekTerbaru',
+                'konsumenTerbaru'
             ),
             ['activeTab' => 'dashboard']
         ));

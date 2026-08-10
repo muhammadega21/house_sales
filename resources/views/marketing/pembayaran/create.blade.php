@@ -86,140 +86,145 @@
             </x-card>
 
             <!-- Section 2: Detail Pembayaran -->
-            <x-card title="Detail Pembayaran" subtitle="Lengkapi detail pembayaran">
-                <div class="grid gap-4 md:grid-cols-2">
-                    <div>
-                        <label for="jenis_pembayaran" class="block text-sm font-semibold text-gray-700 mb-1">
-                            Jenis Pembayaran <span class="text-red-500">*</span>
-                        </label>
-                        <select name="jenis_pembayaran" id="jenis_pembayaran"
-                            class="w-full rounded-lg border border-gray-300 py-2.5 text-sm transition focus:border-primary focus:ring-primary"
-                            x-on:change="updateNominalSuggestion()" required>
-                            <option value="">-- Pilih --</option>
-                            @foreach (\App\Enums\JenisPembayaran::cases() as $jenis)
-                                <option value="{{ $jenis->value }}"
-                                    {{ old('jenis_pembayaran') === $jenis->value ? 'selected' : '' }}>
-                                    {{ $jenis->label() }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('jenis_pembayaran')
-                            <p class="mt-1 text-xs text-red-600 font-semibold">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div>
-                        <label for="nominal" class="block text-sm font-semibold text-gray-700 mb-1">
-                            Nominal (Rp) <span class="text-red-500">*</span>
-                        </label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500 text-sm">Rp</span>
-                    <input type="number" name="nominal" id="nominal" min="1" step="any"
-                            value="{{ old('nominal') }}"
-                            class="w-full rounded-lg border border-gray-300 py-2.5 pr-3 pl-12 text-sm transition focus:border-primary focus:ring-primary"
-                            placeholder="0" required>
+            <template x-if="bookingInfo && bookingInfo.sisa_tagihan > 0">
+                <x-card title="Detail Pembayaran" subtitle="Lengkapi detail pembayaran">
+                    <div class="grid gap-4 md:grid-cols-2">
+                        <div>
+                            <label for="jenis_pembayaran" class="block text-sm font-semibold text-gray-700 mb-1">
+                                Jenis Pembayaran <span class="text-red-500">*</span>
+                            </label>
+                            <select name="jenis_pembayaran" id="jenis_pembayaran"
+                                class="w-full rounded-lg border border-gray-300 py-2.5 text-sm transition focus:border-primary focus:ring-primary"
+                                x-on:change="updateNominalSuggestion()" required>
+                                <option value="">-- Pilih --</option>
+                                @foreach (\App\Enums\JenisPembayaran::cases() as $jenis)
+                                    <option value="{{ $jenis->value }}"
+                                        {{ old('jenis_pembayaran') === $jenis->value ? 'selected' : '' }}>
+                                        {{ $jenis->label() }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('jenis_pembayaran')
+                                <p class="mt-1 text-xs text-red-600 font-semibold">{{ $message }}</p>
+                            @enderror
                         </div>
-                        <p class="mt-1 text-xs text-gray-500">
-                            Saran: <span class="font-semibold" x-text="nominalSuggestion || '-'"></span>
-                        </p>
-                        <p class="mt-1 text-xs text-gray-500">
-                            DP minimal sesuai persentase unit. Cicilan otomatis dibagi 12 bulan.
-                        </p>
-                        @error('nominal')
-                            <p class="mt-1 text-xs text-red-600 font-semibold">{{ $message }}</p>
-                        @enderror
-                    </div>
 
-                    <div>
-                        <label for="tanggal_bayar" class="block text-sm font-semibold text-gray-700 mb-1">
-                            Tanggal Bayar <span class="text-red-500">*</span>
-                        </label>
-                        <input type="date" name="tanggal_bayar" id="tanggal_bayar"
-                            value="{{ old('tanggal_bayar', now()->toDateString()) }}"
-                            class="w-full rounded-lg border border-gray-300 py-2.5 text-sm transition focus:border-primary focus:ring-primary"
-                            required>
-                        @error('tanggal_bayar')
-                            <p class="mt-1 text-xs text-red-600 font-semibold">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div x-data="{ showRek: false }">
-                        <label for="metode_bayar" class="block text-sm font-semibold text-gray-700 mb-1">
-                            Metode Bayar <span class="text-red-500">*</span>
-                        </label>
-                        <select name="metode_bayar" id="metode_bayar"
-                            class="w-full rounded-lg border border-gray-300 py-2.5 text-sm transition focus:border-primary focus:ring-primary"
-                            x-on:change="showRek = $el.value === 'transfer'" required>
-                            <option value="">-- Pilih --</option>
-                            @foreach (\App\Enums\MetodeBayar::cases() as $metode)
-                                <option value="{{ $metode->value }}"
-                                    {{ old('metode_bayar') === $metode->value ? 'selected' : '' }}>
-                                    {{ $metode->icon() }} {{ $metode->label() }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('metode_bayar')
-                            <p class="mt-1 text-xs text-red-600 font-semibold">{{ $message }}</p>
-                        @enderror
-
-                        <template x-if="showRek">
-                            <div class="mt-3">
-                                <label for="no_referensi" class="block text-sm font-semibold text-gray-700 mb-1">
-                                    No. Referensi <span class="text-red-500">*</span>
-                                </label>
-                                <input type="text" name="no_referensi" id="no_referensi"
-                                    value="{{ old('no_referensi') }}"
-                                    class="w-full rounded-lg border border-gray-300 py-2.5 text-sm transition focus:border-primary focus:ring-primary"
-                                    placeholder="Masukkan no. referensi transfer">
-                                @error('no_referensi')
-                                    <p class="mt-1 text-xs text-red-600 font-semibold">{{ $message }}</p>
-                                @enderror
+                        <div>
+                            <label for="nominal" class="block text-sm font-semibold text-gray-700 mb-1">
+                                Nominal (Rp) <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500 text-sm">Rp</span>
+                        <input type="number" name="nominal" id="nominal" min="1" step="any"
+                                value="{{ old('nominal') }}"
+                                class="w-full rounded-lg border border-gray-300 py-2.5 pr-3 pl-12 text-sm transition focus:border-primary focus:ring-primary"
+                                placeholder="0" required>
                             </div>
-                        </template>
+                            <p class="mt-1 text-xs text-gray-500">
+                                Saran: <span class="font-semibold" x-text="nominalSuggestion || '-'"></span>
+                            </p>
+                            <p class="mt-1 text-xs text-gray-500">
+                                DP minimal sesuai persentase unit. Cicilan otomatis dibagi 12 bulan.
+                            </p>
+                            @error('nominal')
+                                <p class="mt-1 text-xs text-red-600 font-semibold">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="tanggal_bayar" class="block text-sm font-semibold text-gray-700 mb-1">
+                                Tanggal Bayar <span class="text-red-500">*</span>
+                            </label>
+                            <input type="date" name="tanggal_bayar" id="tanggal_bayar"
+                                value="{{ old('tanggal_bayar', now()->toDateString()) }}"
+                                class="w-full rounded-lg border border-gray-300 py-2.5 text-sm transition focus:border-primary focus:ring-primary"
+                                required>
+                            @error('tanggal_bayar')
+                                <p class="mt-1 text-xs text-red-600 font-semibold">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div x-data="{ showRek: false }">
+                            <label for="metode_bayar" class="block text-sm font-semibold text-gray-700 mb-1">
+                                Metode Bayar <span class="text-red-500">*</span>
+                            </label>
+                            <select name="metode_bayar" id="metode_bayar"
+                                class="w-full rounded-lg border border-gray-300 py-2.5 text-sm transition focus:border-primary focus:ring-primary"
+                                x-on:change="showRek = $el.value === 'transfer'" required>
+                                <option value="">-- Pilih --</option>
+                                @foreach (\App\Enums\MetodeBayar::cases() as $metode)
+                                    <option value="{{ $metode->value }}"
+                                        {{ old('metode_bayar') === $metode->value ? 'selected' : '' }}>
+                                        {{ $metode->icon() }} {{ $metode->label() }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('metode_bayar')
+                                <p class="mt-1 text-xs text-red-600 font-semibold">{{ $message }}</p>
+                            @enderror
+
+                            <template x-if="showRek">
+                                <div class="mt-3">
+                                    <label for="no_referensi" class="block text-sm font-semibold text-gray-700 mb-1">
+                                        No. Referensi <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" name="no_referensi" id="no_referensi"
+                                        value="{{ old('no_referensi') }}"
+                                        class="w-full rounded-lg border border-gray-300 py-2.5 text-sm transition focus:border-primary focus:ring-primary"
+                                        placeholder="Masukkan no. referensi transfer">
+                                    @error('no_referensi')
+                                        <p class="mt-1 text-xs text-red-600 font-semibold">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </x-card>
+            </template>
+
+            <template x-if="bookingInfo && bookingInfo.sisa_tagihan > 0">
+                <x-card title="Bukti Pembayaran" subtitle="Upload bukti transfer/pembayaran">
+                    <x-form-file name="bukti_bayar" label="Bukti Bayar"
+                        accept="image/jpeg,image/png,image/webp,application/pdf" :required="true" />
+                    <p class="mt-1 text-xs text-gray-400">
+                        Format: JPG, PNG, PDF. Maksimal 5MB. Pastikan bukti jelas terbaca.
+                    </p>
+                </x-card>
+            </template>
+
+            <template x-if="bookingInfo && bookingInfo.sisa_tagihan === 0">
+                <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-4">
+                    <div class="flex gap-3">
+                        <div class="shrink-0">
+                            <svg class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-emerald-800">Semua Tagihan Sudah Lunas</p>
+                            <p class="mt-1 text-sm text-emerald-700">Booking ini telah melunasi seluruh sisa tagihan.
+                                Form input pembayaran dinonaktifkan.</p>
+                        </div>
                     </div>
                 </div>
-            </x-card>
+            </template>
 
-            <!-- Section 3: Bukti Pembayaran -->
-            <x-card title="Bukti Pembayaran" subtitle="Upload bukti transfer/pembayaran">
-                <x-form-file name="bukti_bayar" label="Bukti Bayar"
-                    accept="image/jpeg,image/png,image/webp,application/pdf" :required="true" />
-                <p class="mt-1 text-xs text-gray-400">
-                    Format: JPG, PNG, PDF. Maksimal 5MB. Pastikan bukti jelas terbaca.
-                </p>
-            </x-card>
-
-            <!-- Info Box -->
-            <div class="rounded-xl border border-blue-200 bg-blue-50 px-5 py-4">
-                <div class="flex gap-3">
-                    <div class="shrink-0">
-                        <svg class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <template x-if="bookingInfo && bookingInfo.sisa_tagihan > 0">
+                <div class="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end mt-6">
+                    <a href="{{ route('marketing.pembayaran.index') }}"
+                        class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50">
+                        Batal
+                    </a>
+                    <button type="submit" id="btnSimpan"
+                        class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
-                    </div>
-                    <div>
-                        <p class="text-sm font-semibold text-blue-800">Proses Verifikasi Pembayaran</p>
-                        <p class="mt-1 text-sm text-blue-700">Pembayaran akan diverifikasi oleh Admin. Status:
-                            <b>pending</b> hingga diverifikasi.</p>
-                    </div>
+                        Simpan Pembayaran
+                    </button>
                 </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end mt-6">
-                <a href="{{ route('marketing.pembayaran.index') }}"
-                    class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50">
-                    Batal
-                </a>
-                <button type="submit" id="btnSimpan"
-                    class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    Simpan Pembayaran
-                </button>
-            </div>
+            </template>
         </form>
     </div>
 

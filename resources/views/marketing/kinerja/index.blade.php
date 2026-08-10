@@ -110,7 +110,7 @@
 
         <!-- Filter -->
         <x-card>
-            <form method="GET" action="{{ route('kinerja.index') }}" class="flex flex-col gap-4 lg:flex-row lg:items-end">
+            <form method="GET" action="{{ route('marketing.kinerja.index') }}" class="flex flex-col gap-4 lg:flex-row lg:items-end">
                 <div class="min-w-[160px]">
                     <label for="bulan" class="mb-1 block text-sm font-medium text-gray-700">Bulan</label>
                     <select name="bulan" id="bulan"

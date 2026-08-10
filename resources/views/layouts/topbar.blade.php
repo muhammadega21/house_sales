@@ -8,17 +8,6 @@
             </svg>
         </button>
 
-        <!-- Global Search Input -->
-        <div class="relative hidden sm:block w-64 md:w-80">
-            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-            </span>
-            <input type="text" placeholder="Cari unit, konsumen, booking..."
-                class="w-full rounded-lg border border-gray-300 bg-gray-50 py-1.5 pl-10 pr-4 text-sm text-gray-800 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 transition">
-        </div>
     </div>
 
     <!-- Right Profile & Notification Controls -->

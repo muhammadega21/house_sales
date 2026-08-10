@@ -11,6 +11,8 @@ class SimulasiPembayaran extends Model
 {
     protected $table = 'simulasi_pembayaran';
 
+    public $timestamps = false;
+
     protected $fillable = [
         'id_konsumen',
         'id_unit',

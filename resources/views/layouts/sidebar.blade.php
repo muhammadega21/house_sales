@@ -16,12 +16,11 @@
     <!-- Brand Logo -->
     <div class="flex h-16 items-center justify-between px-6 bg-gray-900">
         <div class="flex items-center gap-3">
-            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600 font-bold text-white shadow">
-                HS
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-white font-bold text-white shadow">
+                <img src="{{ asset('images/logo.png') }}" alt="Logo">
             </div>
             <div>
-                <h1 class="text-base font-bold text-white leading-tight">House Sales</h1>
-                <p class="text-xs text-gray-400">Property System</p>
+                <h1 class="text-base font-bold text-white leading-tight">Sistem Penjualan Rumah</h1>
             </div>
         </div>
         <button @click="sidebarOpen = false" class="lg:hidden text-gray-400 hover:text-white">
@@ -252,7 +251,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                 </svg>
-                Simulasi
+                Simulasi Pembayaran
             </a>
 
             <a href="{{ route('marketing.kinerja.index') }}"

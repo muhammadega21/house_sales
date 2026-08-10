@@ -117,14 +117,18 @@ final class SimulasiService
         float $sukuBunga,
         float $diskonCashKeras = 0
     ): array {
+        $tenorKpr = max(1, $tenorTahun);
+        $sukuBungaKpr = $sukuBunga > 0 ? $sukuBunga : 8;
+        $tenorCashBertahap = max(1, $tenorTahun);
+
         return [
-            'kpr' => $this->hitungKpr($hargaRumah, $dpPersen, $tenorTahun, $sukuBunga),
-            'cash_bertahap' => $this->hitungCashBertahap($hargaRumah, $dpPersen, $tenorTahun),
+            'kpr' => $this->hitungKpr($hargaRumah, $dpPersen, $tenorKpr, $sukuBungaKpr),
+            'cash_bertahap' => $this->hitungCashBertahap($hargaRumah, $dpPersen, $tenorCashBertahap),
             'cash_keras' => $this->hitungCashKeras($hargaRumah, $diskonCashKeras),
         ];
     }
 
-    public function simpanSimulasi(array $data, int $idMarketing, ?int $idKonsumen = null): SimulasiPembayaran
+    public function simpanSimulasi(array $data, ?int $idMarketing, ?int $idKonsumen = null): SimulasiPembayaran
     {
         return SimulasiPembayaran::create([
             'id_konsumen' => $idKonsumen,

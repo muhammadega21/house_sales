@@ -61,6 +61,7 @@ class UserRequest extends FormRequest
                 'max:5120',
                 $this->shouldRequireImageDimensions('foto_profil') ? 'dimensions:min_width=800,min_height=600' : null,
             ], static fn($rule) => $rule !== null),
+            'remove_foto_profil' => ['nullable', 'in:1'],
         ];
     }
 

@@ -17,7 +17,7 @@ class PengaturanSeeder extends Seeder
         $settings = [
             [
                 'kunci' => 'nama_perusahaan',
-                'nilai' => 'PT House Sales Indonesia',
+                'nilai' => 'PT Srijaya Griya Cemerlang',
                 'keterangan' => 'Nama resmi perusahaan pengembang perumahan',
             ],
             [
