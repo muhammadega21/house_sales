@@ -1,10 +1,8 @@
-<!DOCTYPE html>
-<html lang="id">
+@extends('exports.layouts.pdf')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Penjualan – Admin</title>
+@section('docTitle', 'LAPORAN PENJUALAN')
+
+@push('styles')
     <style>
         /* ================================================================
            RESET & BASE
@@ -146,59 +144,6 @@
         }
 
         /* ================================================================
-           KATEGORI BREAKDOWN
-        ================================================================ */
-        .breakdown-grid {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 18px;
-        }
-
-        .breakdown-card {
-            flex: 1;
-            border-radius: 6px;
-            padding: 12px;
-            border: 1px solid;
-        }
-
-        .breakdown-card.subsidi {
-            background: #f0fdf4;
-            border-color: #86efac;
-        }
-
-        .breakdown-card.non-subsidi {
-            background: #fff7ed;
-            border-color: #fed7aa;
-        }
-
-        .breakdown-card .label {
-            font-size: 8px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            margin-bottom: 6px;
-        }
-
-        .breakdown-card.subsidi .label {
-            color: #15803d;
-        }
-
-        .breakdown-card.non-subsidi .label {
-            color: #b45309;
-        }
-
-        .breakdown-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 8.5px;
-            margin-bottom: 2px;
-        }
-
-        .breakdown-row span:last-child {
-            font-weight: 600;
-        }
-
-        /* ================================================================
            TABLE
         ================================================================ */
         .table-section {
@@ -295,49 +240,15 @@
         }
 
         /* ================================================================
-           BREAKDOWN PER BULAN TABLE
-        ================================================================ */
-        .bulan-table {
-            margin-bottom: 18px;
-        }
-
-        /* ================================================================
            FOOTER
         ================================================================ */
-        .footer {
-            border-top: 1px solid #e5e7eb;
-            padding-top: 10px;
-            margin-top: 10px;
-            display: flex;
-            justify-content: space-between;
-            font-size: 8px;
-            color: #6b7280;
-        }
-
-        .footer-left {
-            font-style: italic;
-        }
-
-        .footer-right {
-            text-align: right;
-        }
-
-        .page-number::after {
-            content: counter(page) ' / ' counter(pages);
-        }
-
-        /* DomPDF page break */
-        .page-break {
-            page-break-before: always;
-        }
     </style>
-</head>
+@endpush
 
-<body>
-
+@section('content')
     {{-- ================================================================
-     HEADER
-================================================================ --}}
+      HEADER
+    ================================================================ --}}
     <div class="header">
         <div class="header-top">
             <div>
@@ -367,160 +278,5 @@
         </div>
     </div>
 
-    {{-- ================================================================
-     RINGKASAN CARDS
-================================================================ --}}
-    <div class="summary-section">
-        <div class="section-title">Ringkasan Penjualan</div>
-        <div class="cards-grid">
-            <div class="card">
-                <div class="card-label">Total Unit Terjual</div>
-                <div class="card-value">{{ number_format($laporan['total_unit_terjual']) }}</div>
-            </div>
-            <div class="card">
-                <div class="card-label">Total Nilai Penjualan</div>
-                <div class="card-value green">Rp {{ number_format($laporan['total_nilai_penjualan'], 0, ',', '.') }}
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-label">Total Booking</div>
-                <div class="card-value orange">{{ number_format($laporan['total_booking']) }}</div>
-            </div>
-            <div class="card">
-                <div class="card-label">Rata-rata Harga</div>
-                <div class="card-value purple">Rp {{ number_format($laporan['rata_rata_harga'], 0, ',', '.') }}</div>
-            </div>
-        </div>
-    </div>
-
-    {{-- ================================================================
-     BREAKDOWN KATEGORI
-================================================================ --}}
-    <div class="section-title">Breakdown Kategori</div>
-    <div class="breakdown-grid">
-        <div class="breakdown-card subsidi">
-            <div class="label">🟢 Subsidi</div>
-            <div class="breakdown-row">
-                <span>Total Unit:</span>
-                <span>{{ number_format($laporan['breakdown_kategori']['subsidi']['total_unit']) }} unit</span>
-            </div>
-            <div class="breakdown-row">
-                <span>Total Nilai:</span>
-                <span>Rp
-                    {{ number_format($laporan['breakdown_kategori']['subsidi']['total_nilai'], 0, ',', '.') }}</span>
-            </div>
-        </div>
-        <div class="breakdown-card non-subsidi">
-            <div class="label">🟠 Non-Subsidi</div>
-            <div class="breakdown-row">
-                <span>Total Unit:</span>
-                <span>{{ number_format($laporan['breakdown_kategori']['non_subsidi']['total_unit']) }} unit</span>
-            </div>
-            <div class="breakdown-row">
-                <span>Total Nilai:</span>
-                <span>Rp
-                    {{ number_format($laporan['breakdown_kategori']['non_subsidi']['total_nilai'], 0, ',', '.') }}</span>
-            </div>
-        </div>
-    </div>
-
-    {{-- ================================================================
-     BREAKDOWN PER BULAN
-================================================================ --}}
-    @if (!empty($laporan['breakdown_bulan']))
-        <div class="bulan-table">
-            <div class="section-title">Penjualan per Bulan</div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Bulan</th>
-                        <th class="text-center">Total Unit</th>
-                        <th class="text-right">Total Nilai (Rp)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($laporan['breakdown_bulan'] as $bulan)
-                        <tr>
-                            <td>{{ $bulan['label'] }}</td>
-                            <td class="text-center">{{ number_format($bulan['total_unit']) }}</td>
-                            <td class="text-right nowrap">{{ number_format($bulan['total_nilai'], 0, ',', '.') }}</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    @endif
-
-    {{-- ================================================================
-     TABEL DETAIL PENJUALAN
-================================================================ --}}
-    <div class="table-section">
-        <div class="section-title">Detail Transaksi Penjualan</div>
-        <table>
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Kode Booking</th>
-                    <th>Tgl Booking</th>
-                    <th>Status</th>
-                    <th>Kode Unit</th>
-                    <th>Tipe</th>
-                    <th>Kategori</th>
-                    <th>Perumahan</th>
-                    <th class="text-right">Harga Jual</th>
-                    <th>Konsumen</th>
-                    <th>Marketing</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($laporan['data'] as $i => $row)
-                    <tr>
-                        <td class="text-center">{{ $i + 1 }}</td>
-                        <td class="nowrap">{{ $row->kode_booking }}</td>
-                        <td class="nowrap">{{ \Carbon\Carbon::parse($row->tanggal_booking)->format('d/m/Y') }}</td>
-                        <td>
-                            <span
-                                class="badge {{ $row->status_saat_ini === 'akad' ? 'badge-akad' : 'badge-serah-terima' }}">
-                                {{ strtoupper(str_replace('_', ' ', $row->status_saat_ini)) }}
-                            </span>
-                        </td>
-                        <td>{{ $row->kode_unit }}</td>
-                        <td>{{ $row->tipe_rumah }}</td>
-                        <td>
-                            <span
-                                class="badge {{ $row->kategori === 'subsidi' ? 'badge-subsidi' : 'badge-non-subsidi' }}">
-                                {{ $row->kategori === 'subsidi' ? 'Subsidi' : 'Non-Subsidi' }}
-                            </span>
-                        </td>
-                        <td>{{ $row->nama_perumahan }}</td>
-                        <td class="text-right nowrap">{{ number_format((float) $row->harga_jual, 0, ',', '.') }}</td>
-                        <td>{{ $row->nama_konsumen }}</td>
-                        <td>{{ $row->nama_marketing }}</td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="11" class="text-center" style="padding: 16px; color: #6b7280;">
-                            Tidak ada data penjualan pada periode ini.
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-
-    {{-- ================================================================
-     FOOTER
-================================================================ --}}
-    <div class="footer">
-        <div class="footer-left">
-            Laporan ini digenerate secara otomatis oleh sistem. Harap diverifikasi sebelum digunakan sebagai dokumen
-            resmi.
-        </div>
-        <div class="footer-right">
-            Halaman <span class="page-number"></span>
-        </div>
-    </div>
-
-</body>
-
-</html>
+    @include('exports.partials.laporan-penjualan-body')
+@endsection

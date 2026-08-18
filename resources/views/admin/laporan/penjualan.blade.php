@@ -11,6 +11,7 @@
             </div>
             <div class="flex gap-2">
                 <a href="{{ route('admin.laporan.export-pdf', request()->query()) }}"
+                    onclick="this.disabled=true; this.innerHTML='<svg class=\'animate-spin h-4 w-4 mr-2\' fill=\'none\' viewBox=\'0 0 24 24\'></svg>Mengunduh...'; setTimeout(() => this.disabled=false, 3000);"
                     class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -19,6 +20,7 @@
                     Export PDF
                 </a>
                 <a href="{{ route('admin.laporan.export-excel', request()->query()) }}"
+                    onclick="this.disabled=true; this.innerHTML='<svg class=\'animate-spin h-4 w-4 mr-2\' fill=\'none\' viewBox=\'0 0 24 24\'></svg>Mengunduh...'; setTimeout(() => this.disabled=false, 3000);"
                     class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -32,9 +34,9 @@
         <x-data-table-toolbar
             :search-route="route('admin.laporan.penjualan')"
             search-placeholder="Cari nama konsumen, kode unit..."
-            :per-page="0"
-            :total="count($laporan['data'])"
-            :filtered="count($laporan['data'])"
+            :per-page="$laporan['data']->perPage()"
+            :total="$laporan['data']->total()"
+            :filtered="$laporan['data']->total()"
             :search="request('search')"
             :has-filters="true"
             :exclude-keys="['periode_mulai', 'periode_selesai', 'id_perumahan', 'kategori', 'id_marketing', 'status']"
@@ -103,7 +105,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Total Unit Terjual</p>
-                        <p class="mt-1 text-2xl font-bold text-gray-800">{{ number_format($laporan['total_unit_terjual']) }}</p>
+                        <p class="mt-1 text-2xl font-bold text-gray-800">{{ number_format($laporan['ringkasan']['total_unit_terjual']) }}</p>
                     </div>
                     <div class="rounded-lg bg-emerald-50 p-3 text-emerald-600">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -118,7 +120,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Total Nilai Penjualan</p>
-                        <p class="mt-1 text-2xl font-bold text-gray-800">Rp {{ number_format($laporan['total_nilai_penjualan'], 0, ',', '.') }}</p>
+                        <p class="mt-1 text-2xl font-bold text-gray-800">Rp {{ number_format($laporan['ringkasan']['total_nilai_penjualan'], 0, ',', '.') }}</p>
                     </div>
                     <div class="rounded-lg bg-blue-50 p-3 text-blue-600">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -133,7 +135,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Total Booking</p>
-                        <p class="mt-1 text-2xl font-bold text-gray-800">{{ number_format($laporan['total_booking']) }}</p>
+                        <p class="mt-1 text-2xl font-bold text-gray-800">{{ number_format($laporan['ringkasan']['total_booking']) }}</p>
                     </div>
                     <div class="rounded-lg bg-amber-50 p-3 text-amber-600">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -148,7 +150,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Rata-rata Harga</p>
-                        <p class="mt-1 text-2xl font-bold text-gray-800">Rp {{ number_format($laporan['rata_rata_harga'], 0, ',', '.') }}</p>
+                        <p class="mt-1 text-2xl font-bold text-gray-800">Rp {{ number_format($laporan['ringkasan']['rata_rata_harga'], 0, ',', '.') }}</p>
                     </div>
                     <div class="rounded-lg bg-indigo-50 p-3 text-indigo-600">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -186,7 +188,7 @@
                     <tbody class="divide-y divide-gray-100">
                         @forelse($laporan['data'] as $i => $row)
                             <tr class="hover:bg-gray-50">
-                                <td class="px-3 py-3 text-gray-500">{{ $i + 1 }}</td>
+                                <td class="px-3 py-3 text-gray-500">{{ ($laporan['data']->currentPage() - 1) * $laporan['data']->perPage() + $i + 1 }}</td>
                                 <td class="px-3 py-3 text-gray-600 whitespace-nowrap">
                                     {{ \Carbon\Carbon::parse($row->tanggal_perubahan)->format('d M Y') }}</td>
                                 <td class="px-3 py-3 font-medium text-gray-800">{{ $row->nama_konsumen }}</td>
@@ -208,6 +210,9 @@
                         @endforelse
                     </tbody>
                 </table>
+            </div>
+            <div class="mt-4">
+                <x-pagination :paginator="$laporan['data']" />
             </div>
         </x-card>
     </div>

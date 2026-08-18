@@ -196,7 +196,7 @@
                                 <td class="px-3 py-3 text-right text-gray-600 whitespace-nowrap">
                                     Rp {{ number_format((float) $row->harga_jual, 0, ',', '.') }}</td>
                                 <td class="px-3 py-3 text-center">
-                                    <x-badge :status="'akad'" />
+                                    <x-badge :status="$row->status_saat_ini" />
                                 </td>
                                 <td class="px-3 py-3 text-right text-gray-600 whitespace-nowrap">
                                     Rp {{ number_format($komisi, 0, ',', '.') }}</td>

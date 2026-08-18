@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Exports\LaporanPenjualanExport;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class LaporanService
 {
@@ -28,7 +29,7 @@ class LaporanService
      *   - id_marketing    : int
      *   - status          : string ('akad'|'serah_terima')
      *
-     * @param  array<string, mixed> $filters
+     * @param  array<string, mixed>  $filters
      * @return array<string, mixed>
      */
     public function getLaporanPenjualan(array $filters): array
@@ -41,9 +42,8 @@ class LaporanService
             ? Carbon::parse($filters['periode_selesai'])->endOfDay()
             : Carbon::now()->endOfMonth();
 
-        // Hanya hitung yang status = 'akad' atau 'serah_terima'
         $allowedStatus = ['akad', 'serah_terima'];
-        if (!empty($filters['status']) && in_array($filters['status'], $allowedStatus, true)) {
+        if (! empty($filters['status']) && in_array($filters['status'], $allowedStatus, true)) {
             $allowedStatus = [$filters['status']];
         }
 
@@ -76,56 +76,58 @@ class LaporanService
                 'm.nama_lengkap as nama_marketing',
             ]);
 
-        // Filter perumahan
-        if (!empty($filters['id_perumahan'])) {
+        if (! empty($filters['id_perumahan'])) {
             $query->where('u.id_perumahan', (int) $filters['id_perumahan']);
         }
 
-        // Filter kategori
-        if (!empty($filters['kategori'])) {
+        if (! empty($filters['kategori'])) {
             $query->where('u.kategori', $filters['kategori']);
         }
 
-        // Filter marketing
-        if (!empty($filters['id_marketing'])) {
+        if (! empty($filters['id_marketing'])) {
             $query->where('b.id_marketing', (int) $filters['id_marketing']);
         }
 
         $rows = $query->orderBy('sp.tanggal_perubahan', 'desc')->get();
 
-        // --- Agregat utama ---
-        $totalUnitTerjual    = $rows->count();
+        $totalUnitTerjual = $rows->count();
         $totalNilaiPenjualan = (float) $rows->sum('harga_jual');
-        $totalBooking        = DB::table('booking as b')
-            ->join('unit_rumah as u', 'u.id', '=', 'b.id_unit')
-            ->whereBetween('b.tanggal_booking', [$start->toDateString(), $end->toDateString()])
-            ->when(!empty($filters['id_perumahan']), fn($q) => $q->where('u.id_perumahan', (int) $filters['id_perumahan']))
-            ->when(!empty($filters['kategori']), fn($q) => $q->where('u.kategori', $filters['kategori']))
-            ->when(!empty($filters['id_marketing']), fn($q) => $q->where('b.id_marketing', (int) $filters['id_marketing']))
-            ->count();
         $rataRataHarga = $totalUnitTerjual > 0
             ? round($totalNilaiPenjualan / $totalUnitTerjual, 2)
-            : 0;
+            : 0.0;
 
-        // --- Breakdown per kategori ---
-        $breakdownKategori = [
+        $totalBooking = DB::table('booking as b')
+            ->join('unit_rumah as u', 'u.id', '=', 'b.id_unit')
+            ->whereBetween('b.tanggal_booking', [$start->toDateString(), $end->toDateString()])
+            ->when(! empty($filters['id_perumahan']), fn($q) => $q->where('u.id_perumahan', (int) $filters['id_perumahan']))
+            ->when(! empty($filters['kategori']), fn($q) => $q->where('u.kategori', $filters['kategori']))
+            ->when(! empty($filters['id_marketing']), fn($q) => $q->where('b.id_marketing', (int) $filters['id_marketing']))
+            ->count();
+
+        $ringkasan = [
+            'total_unit_terjual' => $totalUnitTerjual,
+            'total_nilai_penjualan' => $totalNilaiPenjualan,
+            'total_booking' => $totalBooking,
+            'rata_rata_harga' => $rataRataHarga,
+        ];
+
+        $perKategori = [
             'subsidi' => [
-                'total_unit'  => $rows->where('kategori', 'subsidi')->count(),
+                'total_unit' => $rows->where('kategori', 'subsidi')->count(),
                 'total_nilai' => (float) $rows->where('kategori', 'subsidi')->sum('harga_jual'),
             ],
             'non_subsidi' => [
-                'total_unit'  => $rows->where('kategori', 'non_subsidi')->count(),
+                'total_unit' => $rows->where('kategori', 'non_subsidi')->count(),
                 'total_nilai' => (float) $rows->where('kategori', 'non_subsidi')->sum('harga_jual'),
             ],
         ];
 
-        // --- Breakdown per bulan ---
-        $breakdownBulan = $rows
+        $perBulan = $rows
             ->groupBy(fn($row) => Carbon::parse($row->tanggal_perubahan)->format('Y-m'))
             ->map(fn($group, $bulan) => [
-                'bulan'       => $bulan,
-                'label'       => Carbon::parse($bulan . '-01')->translatedFormat('F Y'),
-                'total_unit'  => $group->count(),
+                'bulan' => $bulan,
+                'label' => Carbon::parse($bulan . '-01')->translatedFormat('F Y'),
+                'total_unit' => $group->count(),
                 'total_nilai' => (float) $group->sum('harga_jual'),
             ])
             ->sortKeys()
@@ -133,15 +135,12 @@ class LaporanService
             ->toArray();
 
         return [
-            'total_unit_terjual'    => $totalUnitTerjual,
-            'total_nilai_penjualan' => $totalNilaiPenjualan,
-            'total_booking'         => $totalBooking,
-            'rata_rata_harga'       => $rataRataHarga,
-            'breakdown_kategori'    => $breakdownKategori,
-            'breakdown_bulan'       => $breakdownBulan,
-            'data'                  => $rows->toArray(),
-            'filters'               => [
-                'periode_mulai'   => $start->toDateString(),
+            'ringkasan' => $ringkasan,
+            'per_kategori' => $perKategori,
+            'per_bulan' => $perBulan,
+            'data' => $rows->toArray(),
+            'filters' => [
+                'periode_mulai' => $start->toDateString(),
                 'periode_selesai' => $end->toDateString(),
             ],
         ];
@@ -154,7 +153,7 @@ class LaporanService
     /**
      * Laporan kinerja masing-masing marketing.
      *
-     * @param  array<string, mixed> $filters
+     * @param  array<string, mixed>  $filters
      * @return array<int, array<string, mixed>>
      */
     public function getLaporanPerMarketing(array $filters): array
@@ -181,62 +180,57 @@ class LaporanService
         foreach ($marketingList as $marketing) {
             $idMarketing = (int) $marketing->id;
 
-            // Total prospek
             $totalProspek = DB::table('prospek')
                 ->where('id_marketing', $idMarketing)
                 ->whereBetween('tanggal_prospek', [$start->toDateString(), $end->toDateString()])
                 ->count();
 
-            // Total booking
             $totalBooking = DB::table('booking')
                 ->where('id_marketing', $idMarketing)
                 ->whereBetween('tanggal_booking', [$start->toDateString(), $end->toDateString()])
                 ->count();
 
-            // Total closing (status akad)
             $closingRows = DB::table('status_penjualan as sp')
                 ->join('booking as b', 'b.id', '=', 'sp.id_booking')
                 ->join('unit_rumah as u', 'u.id', '=', 'sp.id_unit')
                 ->where('b.id_marketing', $idMarketing)
-                ->where('sp.status_saat_ini', 'akad')
+                ->whereIn('sp.status_saat_ini', ['akad', 'serah_terima'])
                 ->whereBetween('sp.tanggal_perubahan', [$start, $end])
                 ->select('u.harga_jual')
                 ->get();
 
-            $totalClosing        = $closingRows->count();
+            $totalClosing = $closingRows->count();
             $totalNilaiPenjualan = (float) $closingRows->sum('harga_jual');
-            $totalKomisi         = $totalNilaiPenjualan * ((float) ($marketing->persentase_komisi ?? 0) / 100);
-            $conversionRate      = $totalProspek > 0
+            $totalKomisi = $totalNilaiPenjualan * ((float) ($marketing->persentase_komisi ?? 0) / 100);
+            $conversionRate = $totalProspek > 0
                 ? round($totalClosing / $totalProspek * 100, 2)
                 : 0.0;
 
-            // Target bulan ini
             $target = DB::table('marketing_target')
                 ->where('id_marketing', $idMarketing)
                 ->where('periode_bulan', $bulan)
                 ->where('periode_tahun', $tahun)
                 ->first();
 
-            $targetUnit        = (int) ($target->target_unit ?? 0);
-            $pencapaianTarget  = $targetUnit > 0
+            $targetUnit = (int) ($target->target_unit ?? 0);
+            $pencapaianTarget = $targetUnit > 0
                 ? round($totalClosing / $targetUnit * 100, 2)
                 : 0.0;
 
             $result[] = [
-                'id_marketing'         => $idMarketing,
-                'nama'                 => $marketing->nama_lengkap,
-                'total_prospek'        => $totalProspek,
-                'total_booking'        => $totalBooking,
-                'total_closing'        => $totalClosing,
-                'conversion_rate'      => $conversionRate,
-                'total_nilai_penjualan'=> $totalNilaiPenjualan,
-                'total_komisi'         => $totalKomisi,
-                'target_unit'          => $targetUnit,
-                'pencapaian_target'    => $pencapaianTarget,
+                'id_marketing' => $idMarketing,
+                'nama' => $marketing->nama_lengkap,
+                'total_prospek' => $totalProspek,
+                'total_booking' => $totalBooking,
+                'total_closing' => $totalClosing,
+                'conversion_rate' => $conversionRate,
+                'total_nilai_penjualan' => $totalNilaiPenjualan,
+                'total_komisi' => $totalKomisi,
+                'target_unit' => $targetUnit,
+                'pencapaian_target' => $pencapaianTarget,
             ];
         }
 
-        // Sort by total_closing desc
         usort($result, fn($a, $b) => $b['total_closing'] <=> $a['total_closing']);
 
         return $result;
@@ -249,7 +243,7 @@ class LaporanService
     /**
      * Laporan ketersediaan unit per perumahan.
      *
-     * @param  array<string, mixed> $filters
+     * @param  array<string, mixed>  $filters
      * @return array<int, array<string, mixed>>
      */
     public function getLaporanUnit(array $filters): array
@@ -271,7 +265,7 @@ class LaporanService
             ])
             ->groupBy('p.id', 'p.nama_perumahan', 'p.kota');
 
-        if (!empty($filters['id_perumahan'])) {
+        if (! empty($filters['id_perumahan'])) {
             $query->where('p.id', (int) $filters['id_perumahan']);
         }
 
@@ -289,30 +283,26 @@ class LaporanService
      */
     public function getDashboardAdmin(): array
     {
-        $now       = Carbon::now();
+        $now = Carbon::now();
         $startBulan = $now->copy()->startOfMonth();
-        $endBulan   = $now->copy()->endOfMonth();
+        $endBulan = $now->copy()->endOfMonth();
 
-        // ---- Statistik Umum ----
-        $totalUsers     = DB::table('users')->where('status', 'aktif')->count();
+        $totalUsers = DB::table('users')->where('status', 'aktif')->count();
         $totalPerumahan = DB::table('perumahan')->where('status', 'aktif')->count();
-        $totalUnit      = DB::table('unit_rumah')->count();
-        $totalTersedia  = DB::table('unit_rumah')->where('status_unit', 'tersedia')->count();
-        $totalTerjual   = DB::table('unit_rumah')->where('status_unit', 'dijual')->count();
+        $totalUnit = DB::table('unit_rumah')->count();
+        $totalTersedia = DB::table('unit_rumah')->where('status_unit', 'tersedia')->count();
+        $totalTerjual = DB::table('unit_rumah')->where('status_unit', 'dijual')->count();
 
-        // Booking bulan ini
         $totalBookingBulanIni = DB::table('booking')
             ->whereBetween('tanggal_booking', [$startBulan->toDateString(), $endBulan->toDateString()])
             ->count();
 
-        // Omset bulan ini (dari status akad/serah_terima bulan ini)
         $totalOmsetBulanIni = (float) DB::table('status_penjualan as sp')
             ->join('unit_rumah as u', 'u.id', '=', 'sp.id_unit')
             ->whereIn('sp.status_saat_ini', ['akad', 'serah_terima'])
             ->whereBetween('sp.tanggal_perubahan', [$startBulan, $endBulan])
             ->sum('u.harga_jual');
 
-        // ---- Prospek per Marketing (chart) ----
         $prospekPerMarketing = DB::table('users as m')
             ->leftJoin('prospek as pr', function ($join) use ($startBulan, $endBulan) {
                 $join->on('pr.id_marketing', '=', 'm.id')
@@ -330,7 +320,6 @@ class LaporanService
             ->get()
             ->toArray();
 
-        // ---- Top 5 Marketing by Closing ----
         $top5Marketing = DB::table('users as m')
             ->join('booking as b', 'b.id_marketing', '=', 'm.id')
             ->join('status_penjualan as sp', 'sp.id_booking', '=', 'b.id')
@@ -348,33 +337,31 @@ class LaporanService
             ->get()
             ->toArray();
 
-        // ---- Penjualan per Bulan (6 bulan terakhir) ----
         $penjualanPerBulan = [];
         for ($i = 5; $i >= 0; $i--) {
-            $bulanRef  = $now->copy()->subMonths($i);
-            $awal      = $bulanRef->copy()->startOfMonth();
-            $akhir     = $bulanRef->copy()->endOfMonth();
-            $total     = (float) DB::table('status_penjualan as sp')
+            $bulanRef = $now->copy()->subMonths($i);
+            $awal = $bulanRef->copy()->startOfMonth();
+            $akhir = $bulanRef->copy()->endOfMonth();
+            $total = (float) DB::table('status_penjualan as sp')
                 ->join('unit_rumah as u', 'u.id', '=', 'sp.id_unit')
                 ->whereIn('sp.status_saat_ini', ['akad', 'serah_terima'])
                 ->whereBetween('sp.tanggal_perubahan', [$awal, $akhir])
                 ->sum('u.harga_jual');
 
             $penjualanPerBulan[] = [
-                'bulan'  => $bulanRef->format('Y-m'),
-                'label'  => $bulanRef->translatedFormat('M Y'),
-                'total'  => $total,
-                'count'  => DB::table('status_penjualan')
+                'bulan' => $bulanRef->format('Y-m'),
+                'label' => $bulanRef->translatedFormat('M Y'),
+                'total' => $total,
+                'count' => DB::table('status_penjualan')
                     ->whereIn('status_saat_ini', ['akad', 'serah_terima'])
                     ->whereBetween('tanggal_perubahan', [$awal, $akhir])
                     ->count(),
             ];
         }
 
-        // ---- Kategori Breakdown (pie chart) ----
         $kategoriBreakdown = [
             'subsidi' => [
-                'total_unit'  => DB::table('unit_rumah')->where('kategori', 'subsidi')->where('status_unit', 'dijual')->count(),
+                'total_unit' => DB::table('unit_rumah')->where('kategori', 'subsidi')->where('status_unit', 'dijual')->count(),
                 'total_nilai' => (float) DB::table('status_penjualan as sp')
                     ->join('unit_rumah as u', 'u.id', '=', 'sp.id_unit')
                     ->where('u.kategori', 'subsidi')
@@ -382,7 +369,7 @@ class LaporanService
                     ->sum('u.harga_jual'),
             ],
             'non_subsidi' => [
-                'total_unit'  => DB::table('unit_rumah')->where('kategori', 'non_subsidi')->where('status_unit', 'dijual')->count(),
+                'total_unit' => DB::table('unit_rumah')->where('kategori', 'non_subsidi')->where('status_unit', 'dijual')->count(),
                 'total_nilai' => (float) DB::table('status_penjualan as sp')
                     ->join('unit_rumah as u', 'u.id', '=', 'sp.id_unit')
                     ->where('u.kategori', 'non_subsidi')
@@ -392,17 +379,17 @@ class LaporanService
         ];
 
         return [
-            'total_users'              => $totalUsers,
-            'total_perumahan'          => $totalPerumahan,
-            'total_unit'               => $totalUnit,
-            'total_tersedia'           => $totalTersedia,
-            'total_terjual'            => $totalTerjual,
-            'total_booking_bulan_ini'  => $totalBookingBulanIni,
-            'total_omset_bulan_ini'    => $totalOmsetBulanIni,
-            'prospek_per_marketing'    => $prospekPerMarketing,
-            'top_5_marketing'          => $top5Marketing,
-            'penjualan_per_bulan'      => $penjualanPerBulan,
-            'kategori_breakdown'       => $kategoriBreakdown,
+            'total_users' => $totalUsers,
+            'total_perumahan' => $totalPerumahan,
+            'total_unit' => $totalUnit,
+            'total_tersedia' => $totalTersedia,
+            'total_terjual' => $totalTerjual,
+            'total_booking_bulan_ini' => $totalBookingBulanIni,
+            'total_omset_bulan_ini' => $totalOmsetBulanIni,
+            'prospek_per_marketing' => $prospekPerMarketing,
+            'top_5_marketing' => $top5Marketing,
+            'penjualan_per_bulan' => $penjualanPerBulan,
+            'kategori_breakdown' => $kategoriBreakdown,
         ];
     }
 
@@ -413,84 +400,91 @@ class LaporanService
     /**
      * Data untuk Dashboard Marketing (per user marketing).
      *
-     * @param  int $idMarketing
      * @return array<string, mixed>
      */
     public function getDashboardMarketing(int $idMarketing): array
     {
-        $now        = Carbon::now();
+        $now = Carbon::now();
         $startBulan = $now->copy()->startOfMonth();
-        $endBulan   = $now->copy()->endOfMonth();
-        $bulan      = $now->month;
-        $tahun      = $now->year;
+        $endBulan = $now->copy()->endOfMonth();
+        $bulan = $now->month;
+        $tahun = $now->year;
 
         $marketing = DB::table('users')->find($idMarketing);
 
-        // ---- Prospek bulan ini ----
-        $prospekBulanIni = DB::table('prospek')
+        $totalProspekBulanIni = DB::table('prospek')
             ->where('id_marketing', $idMarketing)
             ->whereBetween('tanggal_prospek', [$startBulan->toDateString(), $endBulan->toDateString()])
-            ->get(['status_prospek']);
+            ->count();
 
-        $totalProspekBulanIni = $prospekBulanIni->count();
-        $prospekBaru          = $prospekBulanIni->where('status_prospek', 'baru')->count();
-        $prospekBerminat      = $prospekBulanIni->where('status_prospek', 'berminat')->count();
+        $prospekBaru = DB::table('prospek')
+            ->where('id_marketing', $idMarketing)
+            ->whereBetween('tanggal_prospek', [$startBulan->toDateString(), $endBulan->toDateString()])
+            ->where('status_prospek', 'baru')
+            ->count();
 
-        // Konversi bulan ini (jadi_konsumen)
-        $konversiBulanIni = $prospekBulanIni->where('status_prospek', 'jadi_konsumen')->count();
+        $prospekBerminat = DB::table('prospek')
+            ->where('id_marketing', $idMarketing)
+            ->whereBetween('tanggal_prospek', [$startBulan->toDateString(), $endBulan->toDateString()])
+            ->where('status_prospek', 'berminat')
+            ->count();
+
+        $konversiBulanIni = DB::table('prospek')
+            ->where('id_marketing', $idMarketing)
+            ->whereBetween('tanggal_prospek', [$startBulan->toDateString(), $endBulan->toDateString()])
+            ->where('status_prospek', 'jadi_konsumen')
+            ->count();
 
         $conversionRate = $totalProspekBulanIni > 0
             ? round($konversiBulanIni / $totalProspekBulanIni * 100, 2)
             : 0.0;
 
-        // ---- Booking bulan ini ----
         $totalBookingBulanIni = DB::table('booking')
             ->where('id_marketing', $idMarketing)
             ->whereBetween('tanggal_booking', [$startBulan->toDateString(), $endBulan->toDateString()])
             ->count();
 
-        // ---- Closing bulan ini (status akad) ----
         $closingRows = DB::table('status_penjualan as sp')
             ->join('booking as b', 'b.id', '=', 'sp.id_booking')
             ->join('unit_rumah as u', 'u.id', '=', 'sp.id_unit')
             ->where('b.id_marketing', $idMarketing)
-            ->where('sp.status_saat_ini', 'akad')
+            ->whereIn('sp.status_saat_ini', ['akad', 'serah_terima'])
             ->whereBetween('sp.tanggal_perubahan', [$startBulan, $endBulan])
             ->select('u.harga_jual')
             ->get();
 
         $totalClosingBulanIni = $closingRows->count();
-        $totalNilaiClosing    = (float) $closingRows->sum('harga_jual');
-        $persentaseKomisi     = (float) ($marketing->persentase_komisi ?? 0);
-        $totalKomisiBulanIni  = $totalNilaiClosing * ($persentaseKomisi / 100);
+        $totalNilaiClosing = (float) $closingRows->sum('harga_jual');
+        $persentaseKomisi = (float) ($marketing->persentase_komisi ?? 0);
+        $totalKomisiBulanIni = $totalNilaiClosing * ($persentaseKomisi / 100);
 
-        // ---- Target bulan ini ----
         $target = DB::table('marketing_target')
             ->where('id_marketing', $idMarketing)
             ->where('periode_bulan', $bulan)
             ->where('periode_tahun', $tahun)
             ->first();
 
-        $targetBulanIni   = (int) ($target->target_unit ?? 0);
+        $targetBulanIni = (int) ($target->target_unit ?? 0);
         $pencapaianTarget = $targetBulanIni > 0
             ? round($totalClosingBulanIni / $targetBulanIni * 100, 2)
             : 0.0;
 
-        // ---- Prospek per Sumber (pie chart) ----
         $prospekPerSumber = DB::table('prospek')
             ->where('id_marketing', $idMarketing)
             ->whereBetween('tanggal_prospek', [$startBulan->toDateString(), $endBulan->toDateString()])
             ->select('sumber_prospek', DB::raw('COUNT(*) as total'))
             ->groupBy('sumber_prospek')
             ->get()
-            ->toArray();
+            ->map(fn($item) => [
+                'label' => (string) $item->sumber_prospek,
+                'total' => $item->total,
+            ]);
 
-        // ---- Tren Bulanan (6 bulan terakhir) ----
         $trenBulanan = [];
         for ($i = 5; $i >= 0; $i--) {
-            $bulanRef  = $now->copy()->subMonths($i);
-            $awal      = $bulanRef->copy()->startOfMonth();
-            $akhir     = $bulanRef->copy()->endOfMonth();
+            $bulanRef = $now->copy()->subMonths($i);
+            $awal = $bulanRef->copy()->startOfMonth();
+            $akhir = $bulanRef->copy()->endOfMonth();
 
             $prospekCount = DB::table('prospek')
                 ->where('id_marketing', $idMarketing)
@@ -500,31 +494,31 @@ class LaporanService
             $closingCount = DB::table('status_penjualan as sp')
                 ->join('booking as b', 'b.id', '=', 'sp.id_booking')
                 ->where('b.id_marketing', $idMarketing)
-                ->where('sp.status_saat_ini', 'akad')
+                ->whereIn('sp.status_saat_ini', ['akad', 'serah_terima'])
                 ->whereBetween('sp.tanggal_perubahan', [$awal, $akhir])
                 ->count();
 
             $trenBulanan[] = [
-                'bulan'         => $bulanRef->format('Y-m'),
-                'label'         => $bulanRef->translatedFormat('M Y'),
+                'bulan' => $bulanRef->format('Y-m'),
+                'label' => $bulanRef->translatedFormat('M Y'),
                 'total_prospek' => $prospekCount,
                 'total_closing' => $closingCount,
             ];
         }
 
         return [
-            'total_prospek_bulan_ini'  => $totalProspekBulanIni,
-            'prospek_baru'             => $prospekBaru,
-            'prospek_berminat'         => $prospekBerminat,
-            'konversi_bulan_ini'       => $konversiBulanIni,
-            'conversion_rate'          => $conversionRate,
-            'total_booking_bulan_ini'  => $totalBookingBulanIni,
-            'total_closing_bulan_ini'  => $totalClosingBulanIni,
-            'target_bulan_ini'         => $targetBulanIni,
-            'pencapaian_target'        => $pencapaianTarget,
-            'total_komisi_bulan_ini'   => $totalKomisiBulanIni,
-            'prospek_per_sumber'       => $prospekPerSumber,
-            'tren_bulanan'             => $trenBulanan,
+            'total_prospek_bulan_ini' => $totalProspekBulanIni,
+            'prospek_baru' => $prospekBaru,
+            'prospek_berminat' => $prospekBerminat,
+            'konversi_bulan_ini' => $konversiBulanIni,
+            'conversion_rate' => $conversionRate,
+            'total_booking_bulan_ini' => $totalBookingBulanIni,
+            'total_closing_bulan_ini' => $totalClosingBulanIni,
+            'target_bulan_ini' => $targetBulanIni,
+            'pencapaian_target' => $pencapaianTarget,
+            'total_komisi_bulan_ini' => $totalKomisiBulanIni,
+            'prospek_per_sumber' => $prospekPerSumber,
+            'tren_bulanan' => $trenBulanan,
         ];
     }
 
@@ -539,19 +533,17 @@ class LaporanService
      */
     public function getDashboardManajemen(): array
     {
-        $now        = Carbon::now();
+        $now = Carbon::now();
         $startBulan = $now->copy()->startOfMonth();
-        $endBulan   = $now->copy()->endOfMonth();
+        $endBulan = $now->copy()->endOfMonth();
         $startTahun = $now->copy()->startOfYear();
-        $endTahun   = $now->copy()->endOfYear();
+        $endTahun = $now->copy()->endOfYear();
 
-        // ---- Statistik Unit ----
         $totalPerumahan = DB::table('perumahan')->where('status', 'aktif')->count();
-        $totalUnit      = DB::table('unit_rumah')->count();
-        $totalTerjual   = DB::table('unit_rumah')->where('status_unit', 'dijual')->count();
-        $totalTersedia  = DB::table('unit_rumah')->where('status_unit', 'tersedia')->count();
+        $totalUnit = DB::table('unit_rumah')->count();
+        $totalTerjual = DB::table('unit_rumah')->where('status_unit', 'dijual')->count();
+        $totalTersedia = DB::table('unit_rumah')->where('status_unit', 'tersedia')->count();
 
-        // ---- Omset ----
         $totalOmsetBulanIni = (float) DB::table('status_penjualan as sp')
             ->join('unit_rumah as u', 'u.id', '=', 'sp.id_unit')
             ->whereIn('sp.status_saat_ini', ['akad', 'serah_terima'])
@@ -564,12 +556,10 @@ class LaporanService
             ->whereBetween('sp.tanggal_perubahan', [$startTahun, $endTahun])
             ->sum('u.harga_jual');
 
-        // ---- Booking bulan ini ----
         $totalBookingBulanIni = DB::table('booking')
             ->whereBetween('tanggal_booking', [$startBulan->toDateString(), $endBulan->toDateString()])
             ->count();
 
-        // ---- Top 5 Marketing by Nilai Penjualan (bulan ini) ----
         $top5Marketing = DB::table('users as m')
             ->join('booking as b', 'b.id_marketing', '=', 'm.id')
             ->join('status_penjualan as sp', 'sp.id_booking', '=', 'b.id')
@@ -589,12 +579,11 @@ class LaporanService
             ->get()
             ->toArray();
 
-        // ---- Penjualan per Bulan (12 bulan terakhir) ----
         $penjualanPerBulan = [];
         for ($i = 11; $i >= 0; $i--) {
             $bulanRef = $now->copy()->subMonths($i);
-            $awal     = $bulanRef->copy()->startOfMonth();
-            $akhir    = $bulanRef->copy()->endOfMonth();
+            $awal = $bulanRef->copy()->startOfMonth();
+            $akhir = $bulanRef->copy()->endOfMonth();
 
             $totalNilai = (float) DB::table('status_penjualan as sp')
                 ->join('unit_rumah as u', 'u.id', '=', 'sp.id_unit')
@@ -608,17 +597,16 @@ class LaporanService
                 ->count();
 
             $penjualanPerBulan[] = [
-                'bulan'       => $bulanRef->format('Y-m'),
-                'label'       => $bulanRef->translatedFormat('M Y'),
+                'bulan' => $bulanRef->format('Y-m'),
+                'label' => $bulanRef->translatedFormat('M Y'),
                 'total_nilai' => $totalNilai,
-                'total_unit'  => $count,
+                'total_unit' => $count,
             ];
         }
 
-        // ---- Kategori Breakdown (pie chart) ----
         $kategoriBreakdown = [
             'subsidi' => [
-                'total_unit'  => DB::table('unit_rumah')->where('kategori', 'subsidi')->where('status_unit', 'dijual')->count(),
+                'total_unit' => DB::table('unit_rumah')->where('kategori', 'subsidi')->where('status_unit', 'dijual')->count(),
                 'total_nilai' => (float) DB::table('status_penjualan as sp')
                     ->join('unit_rumah as u', 'u.id', '=', 'sp.id_unit')
                     ->where('u.kategori', 'subsidi')
@@ -626,7 +614,7 @@ class LaporanService
                     ->sum('u.harga_jual'),
             ],
             'non_subsidi' => [
-                'total_unit'  => DB::table('unit_rumah')->where('kategori', 'non_subsidi')->where('status_unit', 'dijual')->count(),
+                'total_unit' => DB::table('unit_rumah')->where('kategori', 'non_subsidi')->where('status_unit', 'dijual')->count(),
                 'total_nilai' => (float) DB::table('status_penjualan as sp')
                     ->join('unit_rumah as u', 'u.id', '=', 'sp.id_unit')
                     ->where('u.kategori', 'non_subsidi')
@@ -635,21 +623,20 @@ class LaporanService
             ],
         ];
 
-        // ---- Rata-rata Waktu Closing (hari dari booking → akad) ----
         $rataRataWaktuClosing = $this->hitungRataRataWaktuClosing();
 
         return [
-            'total_perumahan'          => $totalPerumahan,
-            'total_unit'               => $totalUnit,
-            'total_terjual'            => $totalTerjual,
-            'total_tersedia'           => $totalTersedia,
-            'total_omset_bulan_ini'    => $totalOmsetBulanIni,
-            'total_omset_tahun_ini'    => $totalOmsetTahunIni,
-            'total_booking_bulan_ini'  => $totalBookingBulanIni,
-            'top_5_marketing'          => $top5Marketing,
-            'penjualan_per_bulan'      => $penjualanPerBulan,
-            'kategori_breakdown'       => $kategoriBreakdown,
-            'rata_rata_waktu_closing'  => $rataRataWaktuClosing,
+            'total_perumahan' => $totalPerumahan,
+            'total_unit' => $totalUnit,
+            'total_terjual' => $totalTerjual,
+            'total_tersedia' => $totalTersedia,
+            'total_omset_bulan_ini' => $totalOmsetBulanIni,
+            'total_omset_tahun_ini' => $totalOmsetTahunIni,
+            'total_booking_bulan_ini' => $totalBookingBulanIni,
+            'top_5_marketing' => $top5Marketing,
+            'penjualan_per_bulan' => $penjualanPerBulan,
+            'kategori_breakdown' => $kategoriBreakdown,
+            'rata_rata_waktu_closing' => $rataRataWaktuClosing,
         ];
     }
 
@@ -660,19 +647,18 @@ class LaporanService
     /**
      * Generate dan download PDF laporan penjualan.
      *
-     * @param  array<string, mixed> $filters
-     * @param  string $role ('admin'|'manajemen')
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @param  array<string, mixed>  $filters
+     * @param  string  $role  ('admin'|'manajemen')
      */
-    public function exportLaporanPenjualanPdf(array $filters, string $role = 'admin'): \Symfony\Component\HttpFoundation\Response
+    public function exportLaporanPenjualanPdf(array $filters, string $role = 'admin'): \Illuminate\Http\Response
     {
-        $data      = $this->getLaporanPenjualan($filters);
-        $view      = $role === 'manajemen'
+        $data = $this->getLaporanPenjualan($filters);
+        $view = $role === 'manajemen'
             ? 'manajemen.laporan.export-pdf'
             : 'admin.laporan.export-pdf';
-        $filename  = 'laporan-penjualan-' . now()->format('Ymd-His') . '.pdf';
+        $filename = 'laporan-penjualan-' . now()->format('Ymd-His') . '.pdf';
 
-        /** @var \Barryvdh\DomPDF\Facade\Pdf $pdf */
+        /** @var Pdf $pdf */
         $pdf = app('dompdf.wrapper');
         $pdf->loadView($view, ['laporan' => $data, 'filters' => $filters, 'generated_at' => now()]);
         $pdf->setPaper('a4', 'landscape');
@@ -687,8 +673,7 @@ class LaporanService
     /**
      * Generate dan download Excel laporan penjualan.
      *
-     * @param  array<string, mixed> $filters
-     * @return BinaryFileResponse
+     * @param  array<string, mixed>  $filters
      */
     public function exportLaporanPenjualanExcel(array $filters): BinaryFileResponse
     {
@@ -703,8 +688,6 @@ class LaporanService
 
     /**
      * Hitung rata-rata waktu (hari) dari tanggal_booking hingga status akad.
-     *
-     * @return float
      */
     private function hitungRataRataWaktuClosing(): float
     {
@@ -723,7 +706,8 @@ class LaporanService
 
         $totalHari = $rows->reduce(function (float $carry, object $row): float {
             $booking = Carbon::parse($row->tanggal_booking);
-            $akad    = Carbon::parse($row->tanggal_akad);
+            $akad = Carbon::parse($row->tanggal_akad);
+
             return $carry + (float) $booking->diffInDays($akad);
         }, 0.0);
 

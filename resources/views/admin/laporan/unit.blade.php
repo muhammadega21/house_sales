@@ -14,9 +14,9 @@
         <x-data-table-toolbar
             :search-route="route('admin.laporan.unit')"
             search-placeholder="Cari laporan unit..."
-            :per-page="0"
-            :total="count($laporan)"
-            :filtered="count($laporan)"
+            :per-page="$laporan->perPage()"
+            :total="$laporan->total()"
+            :filtered="$laporan->total()"
             :search="request('search')"
             :has-filters="true"
             :exclude-keys="['id_perumahan', 'kategori', 'status_unit']"
@@ -162,7 +162,7 @@
                     <tbody class="divide-y divide-gray-100">
                         @forelse($laporan as $i => $row)
                             <tr class="hover:bg-gray-50">
-                                <td class="px-3 py-3 text-gray-500">{{ $i + 1 }}</td>
+                                <td class="px-3 py-3 text-gray-500">{{ ($laporan->currentPage() - 1) * $laporan->perPage() + $i + 1 }}</td>
                                 <td class="px-3 py-3 font-medium text-gray-800">{{ $row['nama_perumahan'] }}</td>
                                 <td class="px-3 py-3 text-center text-gray-600">{{ number_format($row['total_unit']) }}</td>
                                 <td class="px-3 py-3 text-center">
@@ -197,6 +197,9 @@
                         @endforelse
                     </tbody>
                 </table>
+            </div>
+            <div class="mt-4">
+                <x-pagination :paginator="$laporan" />
             </div>
         </x-card>
     </div>

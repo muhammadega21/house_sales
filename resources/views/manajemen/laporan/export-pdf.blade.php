@@ -1,382 +1,381 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Penjualan – Manajemen</title>
-    <style>
-        /* ================================================================
-           RESET & BASE
-        ================================================================ */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+@extends('exports.layouts.pdf')
 
-        body {
-            font-family: 'DejaVu Sans', Arial, sans-serif;
-            font-size: 10px;
-            color: #1e293b;
-            background: #ffffff;
-            line-height: 1.5;
-        }
+@section('docTitle', 'LAPORAN PENJUALAN PERUSAHAAN')
 
-        /* ================================================================
-           HEADER / KOP SURAT
-        ================================================================ */
-        .header {
-            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
-            color: #ffffff;
-            padding: 20px 24px 18px;
-            border-radius: 0 0 8px 8px;
-            margin-bottom: 18px;
-        }
+@push('styles')
+<style>
+    /* ================================================================
+       RESET & BASE
+    ================================================================ */
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
 
-        .header-top {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-        }
+    body {
+        font-family: 'DejaVu Sans', Arial, sans-serif;
+        font-size: 10px;
+        color: #1e293b;
+        background: #ffffff;
+        line-height: 1.5;
+    }
 
-        .company-name {
-            font-size: 18px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
+    /* ================================================================
+       HEADER / KOP SURAT
+    ================================================================ */
+    .header {
+        background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+        color: #ffffff;
+        padding: 20px 24px 18px;
+        border-radius: 0 0 8px 8px;
+        margin-bottom: 18px;
+    }
 
-        .company-subtitle {
-            font-size: 9px;
-            opacity: 0.85;
-            margin-top: 2px;
-        }
+    .header-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+    }
 
-        .report-badge {
-            background: rgba(255,255,255,0.15);
-            border: 1px solid rgba(255,255,255,0.3);
-            border-radius: 4px;
-            padding: 6px 12px;
-            text-align: right;
-        }
+    .company-name {
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
 
-        .report-badge .title {
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
+    .company-subtitle {
+        font-size: 9px;
+        opacity: 0.85;
+        margin-top: 2px;
+    }
 
-        .report-badge .subtitle {
-            font-size: 8px;
-            opacity: 0.85;
-        }
+    .report-badge {
+        background: rgba(255,255,255,0.15);
+        border: 1px solid rgba(255,255,255,0.3);
+        border-radius: 4px;
+        padding: 6px 12px;
+        text-align: right;
+    }
 
-        .header-divider {
-            border: none;
-            border-top: 1px solid rgba(255,255,255,0.3);
-            margin: 12px 0 10px;
-        }
+    .report-badge .title {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
 
-        .header-meta {
-            display: flex;
-            gap: 24px;
-            font-size: 8.5px;
-            opacity: 0.9;
-        }
+    .report-badge .subtitle {
+        font-size: 8px;
+        opacity: 0.85;
+    }
 
-        /* ================================================================
-           KPI SECTION (Executive Summary)
-        ================================================================ */
-        .kpi-section {
-            margin-bottom: 18px;
-        }
+    .header-divider {
+        border: none;
+        border-top: 1px solid rgba(255,255,255,0.3);
+        margin: 12px 0 10px;
+    }
 
-        .section-title {
-            font-size: 11px;
-            font-weight: 700;
-            color: #0f172a;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-left: 3px solid #0f172a;
-            padding-left: 8px;
-            margin-bottom: 10px;
-        }
+    .header-meta {
+        display: flex;
+        gap: 24px;
+        font-size: 8.5px;
+        opacity: 0.9;
+    }
 
-        .kpi-grid {
-            display: flex;
-            gap: 8px;
-        }
+    /* ================================================================
+       KPI SECTION (Executive Summary)
+    ================================================================ */
+    .kpi-section {
+        margin-bottom: 18px;
+    }
 
-        .kpi-card {
-            flex: 1;
-            border-radius: 6px;
-            padding: 10px 12px;
-            border: 1px solid;
-        }
+    .section-title {
+        font-size: 11px;
+        font-weight: 700;
+        color: #0f172a;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-left: 3px solid #0f172a;
+        padding-left: 8px;
+        margin-bottom: 10px;
+    }
 
-        .kpi-card.primary {
-            background: #0f172a;
-            border-color: #0f172a;
-            color: #ffffff;
-        }
+    .kpi-grid {
+        display: flex;
+        gap: 8px;
+    }
 
-        .kpi-card.success {
-            background: #f0fdf4;
-            border-color: #86efac;
-        }
+    .kpi-card {
+        flex: 1;
+        border-radius: 6px;
+        padding: 10px 12px;
+        border: 1px solid;
+    }
 
-        .kpi-card.warning {
-            background: #fffbeb;
-            border-color: #fde68a;
-        }
+    .kpi-card.primary {
+        background: #0f172a;
+        border-color: #0f172a;
+        color: #ffffff;
+    }
 
-        .kpi-card.info {
-            background: #eff6ff;
-            border-color: #bfdbfe;
-        }
+    .kpi-card.success {
+        background: #f0fdf4;
+        border-color: #86efac;
+    }
 
-        .kpi-label {
-            font-size: 7.5px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            margin-bottom: 4px;
-            opacity: 0.75;
-        }
+    .kpi-card.warning {
+        background: #fffbeb;
+        border-color: #fde68a;
+    }
 
-        .kpi-card.primary .kpi-label { color: #cbd5e1; opacity: 1; }
-        .kpi-card.success .kpi-label { color: #15803d; }
-        .kpi-card.warning .kpi-label { color: #b45309; }
-        .kpi-card.info .kpi-label { color: #1d4ed8; }
+    .kpi-card.info {
+        background: #eff6ff;
+        border-color: #bfdbfe;
+    }
 
-        .kpi-value {
-            font-size: 14px;
-            font-weight: 700;
-        }
+    .kpi-label {
+        font-size: 7.5px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        margin-bottom: 4px;
+        opacity: 0.75;
+    }
 
-        .kpi-card.primary .kpi-value { color: #ffffff; }
-        .kpi-card.success .kpi-value { color: #15803d; }
-        .kpi-card.warning .kpi-value { color: #b45309; }
-        .kpi-card.info .kpi-value { color: #1d4ed8; }
+    .kpi-card.primary .kpi-label { color: #cbd5e1; opacity: 1; }
+    .kpi-card.success .kpi-label { color: #15803d; }
+    .kpi-card.warning .kpi-label { color: #b45309; }
+    .kpi-card.info .kpi-label { color: #1d4ed8; }
 
-        /* ================================================================
-           BREAKDOWN KATEGORI (Eksekutif style)
-        ================================================================ */
-        .breakdown-executive {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 18px;
-        }
+    .kpi-value {
+        font-size: 14px;
+        font-weight: 700;
+    }
 
-        .breakdown-half {
-            flex: 1;
-            border-radius: 6px;
-            overflow: hidden;
-            border: 1px solid #e5e7eb;
-        }
+    .kpi-card.primary .kpi-value { color: #ffffff; }
+    .kpi-card.success .kpi-value { color: #15803d; }
+    .kpi-card.warning .kpi-value { color: #b45309; }
+    .kpi-card.info .kpi-value { color: #1d4ed8; }
 
-        .breakdown-header {
-            padding: 6px 12px;
-            font-size: 8.5px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-        }
+    /* ================================================================
+       BREAKDOWN KATEGORI (Eksekutif style)
+    ================================================================ */
+    .breakdown-executive {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 18px;
+    }
 
-        .breakdown-header.subsidi {
-            background: #15803d;
-            color: #ffffff;
-        }
+    .breakdown-half {
+        flex: 1;
+        border-radius: 6px;
+        overflow: hidden;
+        border: 1px solid #e5e7eb;
+    }
 
-        .breakdown-header.non-subsidi {
-            background: #b45309;
-            color: #ffffff;
-        }
+    .breakdown-header {
+        padding: 6px 12px;
+        font-size: 8.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
 
-        .breakdown-body {
-            padding: 8px 12px;
-            background: #ffffff;
-        }
+    .breakdown-header.subsidi {
+        background: #15803d;
+        color: #ffffff;
+    }
 
-        .breakdown-stat {
-            display: flex;
-            justify-content: space-between;
-            font-size: 8.5px;
-            padding: 2px 0;
-            border-bottom: 1px solid #f3f4f6;
-        }
+    .breakdown-header.non-subsidi {
+        background: #b45309;
+        color: #ffffff;
+    }
 
-        .breakdown-stat:last-child {
-            border-bottom: none;
-        }
+    .breakdown-body {
+        padding: 8px 12px;
+        background: #ffffff;
+    }
 
-        .breakdown-stat .val {
-            font-weight: 700;
-        }
+    .breakdown-stat {
+        display: flex;
+        justify-content: space-between;
+        font-size: 8.5px;
+        padding: 2px 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
 
-        /* ================================================================
-           TREN BULANAN TABLE
-        ================================================================ */
-        .tren-section {
-            margin-bottom: 18px;
-        }
+    .breakdown-stat:last-child {
+        border-bottom: none;
+    }
 
-        /* ================================================================
-           TABLE
-        ================================================================ */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 8.5px;
-        }
+    .breakdown-stat .val {
+        font-weight: 700;
+    }
 
-        thead tr {
-            background: #0f172a;
-            color: #ffffff;
-        }
+    /* ================================================================
+       TREN BULANAN TABLE
+    ================================================================ */
+    .tren-section {
+        margin-bottom: 18px;
+    }
 
-        thead th {
-            padding: 7px 8px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 7.5px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            white-space: nowrap;
-        }
+    /* ================================================================
+       TABLE
+    ================================================================ */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 8.5px;
+    }
 
-        thead th.text-right { text-align: right; }
-        thead th.text-center { text-align: center; }
+    thead tr {
+        background: #0f172a;
+        color: #ffffff;
+    }
 
-        tbody tr:nth-child(even) {
-            background: #f8fafc;
-        }
+    thead th {
+        padding: 7px 8px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 7.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        white-space: nowrap;
+    }
 
-        tbody tr:nth-child(odd) {
-            background: #ffffff;
-        }
+    thead th.text-right { text-align: right; }
+    thead th.text-center { text-align: center; }
 
-        tbody td {
-            padding: 6px 8px;
-            border-bottom: 1px solid #e5e7eb;
-            vertical-align: top;
-        }
+    tbody tr:nth-child(even) {
+        background: #f8fafc;
+    }
 
-        tbody td.text-right { text-align: right; }
-        tbody td.text-center { text-align: center; }
-        tbody td.nowrap { white-space: nowrap; }
+    tbody tr:nth-child(odd) {
+        background: #ffffff;
+    }
 
-        tfoot tr {
-            background: #1e3a5f;
-            color: #ffffff;
-            font-weight: 700;
-        }
+    tbody td {
+        padding: 6px 8px;
+        border-bottom: 1px solid #e5e7eb;
+        vertical-align: top;
+    }
 
-        tfoot td {
-            padding: 7px 8px;
-        }
+    tbody td.text-right { text-align: right; }
+    tbody td.text-center { text-align: center; }
+    tbody td.nowrap { white-space: nowrap; }
 
-        tfoot td.text-right { text-align: right; }
+    tfoot tr {
+        background: #1e3a5f;
+        color: #ffffff;
+        font-weight: 700;
+    }
 
-        .badge {
-            display: inline-block;
-            padding: 1px 6px;
-            border-radius: 20px;
-            font-size: 7px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
+    tfoot td {
+        padding: 7px 8px;
+    }
 
-        .badge-akad {
-            background: #dcfce7;
-            color: #15803d;
-        }
+    tfoot td.text-right { text-align: right; }
 
-        .badge-serah-terima {
-            background: #dbeafe;
-            color: #1e40af;
-        }
+    .badge {
+        display: inline-block;
+        padding: 1px 6px;
+        border-radius: 20px;
+        font-size: 7px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
 
-        .badge-subsidi {
-            background: #d1fae5;
-            color: #065f46;
-        }
+    .badge-akad {
+        background: #dcfce7;
+        color: #15803d;
+    }
 
-        .badge-non-subsidi {
-            background: #ffedd5;
-            color: #9a3412;
-        }
+    .badge-serah-terima {
+        background: #dbeafe;
+        color: #1e40af;
+    }
 
-        /* ================================================================
-           SIGNATURE BOX
-        ================================================================ */
-        .signature-section {
-            margin-top: 24px;
-            display: flex;
-            justify-content: flex-end;
-        }
+    .badge-subsidi {
+        background: #d1fae5;
+        color: #065f46;
+    }
 
-        .signature-box {
-            width: 200px;
-            text-align: center;
-        }
+    .badge-non-subsidi {
+        background: #ffedd5;
+        color: #9a3412;
+    }
 
-        .signature-title {
-            font-size: 8.5px;
-            color: #374151;
-            margin-bottom: 48px;
-        }
+    /* ================================================================
+       SIGNATURE BOX
+    ================================================================ */
+    .signature-section {
+        margin-top: 24px;
+        display: flex;
+        justify-content: flex-end;
+    }
 
-        .signature-line {
-            border-top: 1px solid #374151;
-            padding-top: 4px;
-            font-size: 8.5px;
-            font-weight: 600;
-            color: #0f172a;
-        }
+    .signature-box {
+        width: 200px;
+        text-align: center;
+    }
 
-        /* ================================================================
-           FOOTER
-        ================================================================ */
-        .footer {
-            border-top: 1px solid #e5e7eb;
-            padding-top: 10px;
-            margin-top: 10px;
-            display: flex;
-            justify-content: space-between;
-            font-size: 8px;
-            color: #6b7280;
-        }
+    .signature-title {
+        font-size: 8.5px;
+        color: #374151;
+        margin-bottom: 48px;
+    }
 
-        .footer-left {
-            font-style: italic;
-        }
+    .signature-line {
+        border-top: 1px solid #374151;
+        padding-top: 4px;
+        font-size: 8.5px;
+        font-weight: 600;
+        color: #0f172a;
+    }
 
-        .page-break {
-            page-break-before: always;
-        }
+    /* ================================================================
+       FOOTER
+    ================================================================ */
+    .footer {
+        border-top: 1px solid #e5e7eb;
+        padding-top: 10px;
+        margin-top: 10px;
+        display: flex;
+        justify-content: space-between;
+        font-size: 8px;
+        color: #6b7280;
+    }
 
-        /* Confidential watermark */
-        .confidential-stamp {
-            display: inline-block;
-            border: 2px solid #ef4444;
-            color: #ef4444;
-            font-size: 9px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            padding: 2px 8px;
-            border-radius: 3px;
-            opacity: 0.7;
-            transform: rotate(-3deg);
-        }
-    </style>
-</head>
-<body>
+    .footer-left {
+        font-style: italic;
+    }
 
+    .page-break {
+        page-break-before: always;
+    }
+
+    /* Confidential watermark */
+    .confidential-stamp {
+        display: inline-block;
+        border: 2px solid #ef4444;
+        color: #ef4444;
+        font-size: 9px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 2px 8px;
+        border-radius: 3px;
+        opacity: 0.7;
+        transform: rotate(-3deg);
+    }
+</style>
+@endpush
+
+@section('content')
 {{-- ================================================================
      HEADER
-================================================================ --}}
+=============================================================== --}}
 <div class="header">
     <div class="header-top">
         <div>
@@ -408,48 +407,48 @@
 
 {{-- ================================================================
      KPI EXECUTIVE SUMMARY
-================================================================ --}}
+=============================================================== --}}
 <div class="kpi-section">
     <div class="section-title">Executive Summary</div>
     <div class="kpi-grid">
         <div class="kpi-card primary">
             <div class="kpi-label">Total Unit Terjual</div>
-            <div class="kpi-value">{{ number_format($laporan['total_unit_terjual']) }} Unit</div>
+            <div class="kpi-value">{{ number_format($laporan['ringkasan']['total_unit_terjual']) }} Unit</div>
         </div>
         <div class="kpi-card success">
             <div class="kpi-label">Total Nilai Penjualan</div>
-            <div class="kpi-value">Rp {{ number_format($laporan['total_nilai_penjualan'], 0, ',', '.') }}</div>
+            <div class="kpi-value">Rp {{ number_format($laporan['ringkasan']['total_nilai_penjualan'], 0, ',', '.') }}</div>
         </div>
         <div class="kpi-card warning">
             <div class="kpi-label">Rata-rata Harga/Unit</div>
-            <div class="kpi-value">Rp {{ number_format($laporan['rata_rata_harga'], 0, ',', '.') }}</div>
+            <div class="kpi-value">Rp {{ number_format($laporan['ringkasan']['rata_rata_harga'], 0, ',', '.') }}</div>
         </div>
         <div class="kpi-card info">
             <div class="kpi-label">Total Booking</div>
-            <div class="kpi-value">{{ number_format($laporan['total_booking']) }}</div>
+            <div class="kpi-value">{{ number_format($laporan['ringkasan']['total_booking']) }}</div>
         </div>
     </div>
 </div>
 
 {{-- ================================================================
      BREAKDOWN KATEGORI
-================================================================ --}}
+=============================================================== --}}
 <div class="section-title">Perbandingan Kategori</div>
 <div class="breakdown-executive">
     <div class="breakdown-half">
-        <div class="breakdown-header subsidi">🟢 Subsidi</div>
+        <div class="breakdown-header subsidi">Subsidi</div>
         <div class="breakdown-body">
             <div class="breakdown-stat">
                 <span>Jumlah Unit Terjual</span>
-                <span class="val">{{ number_format($laporan['breakdown_kategori']['subsidi']['total_unit']) }} unit</span>
+                <span class="val">{{ number_format($laporan['per_kategori']['subsidi']['total_unit']) }} unit</span>
             </div>
             <div class="breakdown-stat">
                 <span>Total Nilai Penjualan</span>
-                <span class="val">Rp {{ number_format($laporan['breakdown_kategori']['subsidi']['total_nilai'], 0, ',', '.') }}</span>
+                <span class="val">Rp {{ number_format($laporan['per_kategori']['subsidi']['total_nilai'], 0, ',', '.') }}</span>
             </div>
             @php
-                $pctSubsidi = $laporan['total_unit_terjual'] > 0
-                    ? round($laporan['breakdown_kategori']['subsidi']['total_unit'] / $laporan['total_unit_terjual'] * 100, 1)
+                $pctSubsidi = $laporan['ringkasan']['total_unit_terjual'] > 0
+                    ? round($laporan['per_kategori']['subsidi']['total_unit'] / $laporan['ringkasan']['total_unit_terjual'] * 100, 1)
                     : 0;
             @endphp
             <div class="breakdown-stat">
@@ -459,19 +458,19 @@
         </div>
     </div>
     <div class="breakdown-half">
-        <div class="breakdown-header non-subsidi">🟠 Non-Subsidi</div>
+        <div class="breakdown-header non-subsidi">Non-Subsidi</div>
         <div class="breakdown-body">
             <div class="breakdown-stat">
                 <span>Jumlah Unit Terjual</span>
-                <span class="val">{{ number_format($laporan['breakdown_kategori']['non_subsidi']['total_unit']) }} unit</span>
+                <span class="val">{{ number_format($laporan['per_kategori']['non_subsidi']['total_unit']) }} unit</span>
             </div>
             <div class="breakdown-stat">
                 <span>Total Nilai Penjualan</span>
-                <span class="val">Rp {{ number_format($laporan['breakdown_kategori']['non_subsidi']['total_nilai'], 0, ',', '.') }}</span>
+                <span class="val">Rp {{ number_format($laporan['per_kategori']['non_subsidi']['total_nilai'], 0, ',', '.') }}</span>
             </div>
             @php
-                $pctNonSubsidi = $laporan['total_unit_terjual'] > 0
-                    ? round($laporan['breakdown_kategori']['non_subsidi']['total_unit'] / $laporan['total_unit_terjual'] * 100, 1)
+                $pctNonSubsidi = $laporan['ringkasan']['total_unit_terjual'] > 0
+                    ? round($laporan['per_kategori']['non_subsidi']['total_unit'] / $laporan['ringkasan']['total_unit_terjual'] * 100, 1)
                     : 0;
             @endphp
             <div class="breakdown-stat">
@@ -484,8 +483,8 @@
 
 {{-- ================================================================
      TREN PENJUALAN PER BULAN
-================================================================ --}}
-@if(!empty($laporan['breakdown_bulan']))
+=============================================================== --}}
+@if(!empty($laporan['per_bulan']))
 <div class="tren-section">
     <div class="section-title">Tren Penjualan per Bulan</div>
     <table>
@@ -498,7 +497,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach($laporan['breakdown_bulan'] as $bulan)
+            @foreach($laporan['per_bulan'] as $bulan)
             <tr>
                 <td>{{ $bulan['label'] }}</td>
                 <td class="text-center">{{ number_format($bulan['total_unit']) }}</td>
@@ -512,9 +511,9 @@
         <tfoot>
             <tr>
                 <td><strong>TOTAL</strong></td>
-                <td class="text-center"><strong>{{ number_format($laporan['total_unit_terjual']) }}</strong></td>
-                <td class="text-right"><strong>{{ number_format($laporan['total_nilai_penjualan'], 0, ',', '.') }}</strong></td>
-                <td class="text-right"><strong>{{ number_format($laporan['rata_rata_harga'], 0, ',', '.') }}</strong></td>
+                <td class="text-center"><strong>{{ number_format($laporan['ringkasan']['total_unit_terjual']) }}</strong></td>
+                <td class="text-right"><strong>{{ number_format($laporan['ringkasan']['total_nilai_penjualan'], 0, ',', '.') }}</strong></td>
+                <td class="text-right"><strong>{{ number_format($laporan['ringkasan']['rata_rata_harga'], 0, ',', '.') }}</strong></td>
             </tr>
         </tfoot>
     </table>
@@ -523,7 +522,7 @@
 
 {{-- ================================================================
      DETAIL PENJUALAN
-================================================================ --}}
+=============================================================== --}}
 <div class="page-break"></div>
 <div class="section-title" style="margin-top: 16px;">Detail Transaksi Penjualan</div>
 <table>
@@ -577,34 +576,26 @@
     <tfoot>
         <tr>
             <td colspan="8"><strong>TOTAL</strong></td>
-            <td class="text-right"><strong>{{ number_format($laporan['total_nilai_penjualan'], 0, ',', '.') }}</strong></td>
+            <td class="text-right"><strong>{{ number_format($laporan['ringkasan']['total_nilai_penjualan'], 0, ',', '.') }}</strong></td>
             <td colspan="2"></td>
         </tr>
     </tfoot>
     @endif
 </table>
+@endsection
 
+@section('after')
 {{-- ================================================================
      TANDA TANGAN
-================================================================ --}}
+=============================================================== --}}
 <div class="signature-section">
     <div class="signature-box">
         <div class="signature-title">Disahkan oleh,</div>
         <div class="signature-line">Direktur / Manajemen</div>
     </div>
 </div>
+@endsection
 
-{{-- ================================================================
-     FOOTER
-================================================================ --}}
-<div class="footer">
-    <div class="footer-left">
-        RAHASIA – Dokumen ini hanya untuk kalangan internal manajemen. Dilarang mendistribusikan tanpa izin.
-    </div>
-    <div>
-        Dicetak: {{ $generated_at->format('d/m/Y H:i') }}
-    </div>
-</div>
-
-</body>
-</html>
+@section('footerLeft')
+RAHASIA – Dokumen ini hanya untuk kalangan internal manajemen. Dilarang mendistribusikan tanpa izin.
+@endsection

@@ -31,7 +31,7 @@ class KonsumenFactory extends Factory
             'pekerjaan' => fake()->randomElement(['Karyawan Swasta', 'PNS', 'Wiraswasta', 'Guru', 'Perawat']),
             'nama_perusahaan' => fake()->optional()->company(),
             'penghasilan_bulanan' => fake()->numberBetween(3, 15) * 1_000_000,
-            'npwp' => fake()->optional()->numerify('##.###.###.#-###.###'),
+            'npwp' => fake()->optional()->numerify('###############'),
         ];
     }
 }

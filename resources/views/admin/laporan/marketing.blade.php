@@ -9,14 +9,26 @@
                 <h1 class="text-2xl font-bold text-gray-800">Laporan Kinerja Marketing</h1>
                 <p class="text-sm text-gray-500">Performa penjualan setiap marketing</p>
             </div>
-            <a href="{{ route('admin.laporan.export-excel', request()->query()) }}"
-                class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                </svg>
-                Export Excel
-            </a>
+            <div class="flex gap-2">
+                <a href="{{ route('admin.laporan.export-pdf', request()->query()) }}"
+                    onclick="this.disabled=true; this.innerHTML='<svg class=\'animate-spin h-4 w-4 mr-2\' fill=\'none\' viewBox=\'0 0 24 24\'></svg>Mengunduh...'; setTimeout(() => this.disabled=false, 3000);"
+                    class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                    Export PDF
+                </a>
+                <a href="{{ route('admin.laporan.export-excel', request()->query()) }}"
+                    onclick="this.disabled=true; this.innerHTML='<svg class=\'animate-spin h-4 w-4 mr-2\' fill=\'none\' viewBox=\'0 0 24 24\'></svg>Mengunduh...'; setTimeout(() => this.disabled=false, 3000);"
+                    class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                    Export Excel
+                </a>
+            </div>
         </div>
 
         <x-data-table-toolbar

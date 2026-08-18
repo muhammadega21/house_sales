@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\JenisKelamin;
 use App\Enums\StatusPernikahan;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -13,6 +14,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Konsumen extends Model
 {
+    use HasFactory;
+
     protected $table = 'konsumen';
 
     protected $fillable = [
