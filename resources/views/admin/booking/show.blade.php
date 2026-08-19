@@ -101,14 +101,14 @@
                                 <span class="ml-2 font-semibold text-gray-900">Rp
                                     {{ number_format($sisaTagihan, 0, ',', '.') }}</span>
                             </div>
-                            <a href="{{ route('marketing.pembayaran.create', ['idBooking' => $booking->id]) }}"
+                            {{-- <a href="{{ route('marketing.pembayaran.create', ['idBooking' => $booking->id]) }}"
                                 class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-primary-dark">
                                 <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 4v16m8-8H4" />
                                 </svg>
                                 Input Pembayaran
-                            </a>
+                            </a> --}}
                         </div>
                     @endif
 
@@ -229,14 +229,14 @@
 
                     @if ($statusSekarang === 'booking')
                         <div class="space-y-3">
-                            <a href="{{ route('marketing.pembayaran.create', ['idBooking' => $booking->id]) }}"
+                            {{-- <a href="{{ route('marketing.pembayaran.create', ['idBooking' => $booking->id]) }}"
                                 class="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-dark">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 4v16m8-8H4" />
                                 </svg>
                                 Input Pembayaran
-                            </a>
+                            </a> --}}
 
                             @php
                                 $docsLengkap = app(\App\Services\DokumenService::class)->isComplete(

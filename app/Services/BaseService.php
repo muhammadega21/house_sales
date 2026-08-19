@@ -68,7 +68,7 @@ class BaseService
         // 2. Direct Column Filters
         $ignoredKeys = ['page', 'per_page', 'search', 'sort_by', 'sort_dir', 'sort_direction'];
         $tableName = $modelInstance->getTable();
-        
+
         $validFields = array_merge(
             $modelInstance->getFillable(),
             [$modelInstance->getKeyName(), 'created_at', 'updated_at']

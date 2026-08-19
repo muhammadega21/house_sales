@@ -22,7 +22,7 @@
             <p class="text-xs text-gray-500">{{ $konsumen->alamat_lengkap }}</p>
         </div>
         <div class="mt-3">
-            <a href="{{ route('marketing.konsumen.show', $konsumen->id) }}"
+            <a href="{{ route('admin.konsumen.show', $konsumen->id) }}"
                 class="text-xs font-medium text-primary hover:text-primary-dark">
                 Lihat Detail Konsumen →
             </a>
